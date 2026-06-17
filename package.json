@@ -1,0 +1,35 @@
+{
+  "name": "billiard-platform-uz",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/api",
+    "apps/bot"
+  ],
+  "scripts": {
+    "dev": "npm run dev:db && wait-on tcp:127.0.0.1:5433 && npm run prisma:generate -w apps/api && npm run prisma:deploy && npm run seed && concurrently -k -n api,web,bot -c blue,green,yellow \"npm:dev:api\" \"npm:dev:web\" \"npm:dev:bot\"",
+    "dev:db": "docker compose up -d postgres",
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:api": "npm --workspace apps/api run start:dev",
+    "dev:bot": "npm --workspace apps/bot run dev",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:ps": "docker compose ps",
+    "docker:logs:api": "docker compose logs --tail=120 api",
+    "docker:logs:web": "docker compose logs --tail=120 web",
+    "docker:logs:bot": "docker compose logs --tail=120 bot",
+    "build": "npm run prisma:generate -w apps/api && npm run build -w apps/api && npm run build -w apps/web && npm run build -w apps/bot",
+    "test": "npm run test -w apps/api",
+    "seed": "npm --workspace apps/api run prisma:seed",
+    "prisma:generate": "npm --workspace apps/api run prisma:generate",
+    "prisma:migrate": "npm --workspace apps/api run prisma:migrate:dev",
+    "prisma:deploy": "npm --workspace apps/api run prisma:migrate:deploy",
+    "typecheck": "npm run typecheck -w apps/api && npm run typecheck -w apps/web && npm run typecheck -w apps/bot",
+    "verify": "npm run typecheck && npm run test && npm run build",
+    "postinstall": "npm run prisma:generate"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "wait-on": "^8.0.1"
+  }
+}

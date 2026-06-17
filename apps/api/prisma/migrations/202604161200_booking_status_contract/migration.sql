@@ -1,0 +1,13 @@
+DO $$
+BEGIN
+  ALTER TYPE "BookingStatus" ADD VALUE IF NOT EXISTS 'ACTIVE';
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER TYPE "BookingStatus" ADD VALUE IF NOT EXISTS 'FINISHED';
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

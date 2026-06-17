@@ -1,0 +1,107 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: billiard_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: billiard
+      POSTGRES_PASSWORD: billiard
+      POSTGRES_DB: billiard
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U billiard -d billiard"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: billiard_api
+    env_file:
+      - ./apps/api/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://billiard:billiard@postgres:5432/billiard?schema=public
+      BOT_INTERNAL_SECRET: ${BOT_INTERNAL_SECRET:-docker_local_bot_secret}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-docker_local_access_secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-docker_local_refresh_secret}
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 30d
+      JWT_REFRESH_COOKIE_NAME: billard_refresh
+      SPECIAL_ADMIN_EMAIL: ${SPECIAL_ADMIN_EMAIL:-}
+      AUTH_COOKIE_SECURE: "false"
+      EMAIL_VERIFICATION_EXPIRES_IN: 1d
+      PASSWORD_RESET_EXPIRES_IN: 1h
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:4000/api}
+      EMAIL_OUTBOX_DIR: /app/apps/api/.email-outbox
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      YANDEX_MAPS_API_KEY: ${YANDEX_MAPS_API_KEY:-}
+      YANDEX_ORG_SEARCH_ENABLED: ${YANDEX_ORG_SEARCH_ENABLED:-true}
+      YANDEX_SEARCH_CITY: ${YANDEX_SEARCH_CITY:-Tashkent}
+      YANDEX_SEARCH_QUERY: ${YANDEX_SEARCH_QUERY:-бильярд Ташкент}
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+    volumes:
+      - ./apps/api/.email-outbox:/app/apps/api/.email-outbox
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: billiard_web
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NEXT_PUBLIC_API_URL: /api
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      INTERNAL_API_URL: http://api:4000/api
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  bot:
+    build:
+      context: .
+      dockerfile: apps/bot/Dockerfile
+    container_name: billiard_bot
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3000}
+      BOT_API_URL: http://api:4000/api
+      BOT_INTERNAL_SECRET: ${BOT_INTERNAL_SECRET:-docker_local_bot_secret}
+      BOT_MODE: ${BOT_MODE:-polling}
+      BOT_PORT: ${BOT_PORT:-4100}
+      BOT_WEBHOOK_PATH: ${BOT_WEBHOOK_PATH:-/telegram/webhook}
+      BOT_WEBHOOK_URL: ${BOT_WEBHOOK_URL:-}
+    ports:
+      - "4100:4100"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4100/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  pgdata:

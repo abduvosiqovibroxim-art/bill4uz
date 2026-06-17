@@ -1,0 +1,17 @@
+CREATE TYPE "TournamentType" AS ENUM ('VISITOR', 'AMATEUR', 'PRO');
+CREATE TYPE "PlayerLevel" AS ENUM ('NOVICE', 'AMATEUR', 'STRONG_AMATEUR', 'SEMI_PRO', 'PRO');
+
+ALTER TYPE "ParticipantSelectionMode" ADD VALUE IF NOT EXISTS 'DIRECT';
+
+ALTER TABLE "Player"
+  ADD COLUMN "levelPoints" INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN "tournamentsPlayed" INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN "tournamentWins" INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN "level" "PlayerLevel" NOT NULL DEFAULT 'NOVICE';
+
+ALTER TABLE "Tournament"
+  ADD COLUMN "tournamentType" "TournamentType" NOT NULL DEFAULT 'VISITOR',
+  ADD COLUMN "minPlayerLevel" "PlayerLevel" NOT NULL DEFAULT 'NOVICE',
+  ADD COLUMN "maxPlayerLevel" "PlayerLevel" NOT NULL DEFAULT 'PRO',
+  ADD COLUMN "repeatEveryDays" INTEGER,
+  ADD COLUMN "repeatSpawnedAt" TIMESTAMP(3);

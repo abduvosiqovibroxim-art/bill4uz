@@ -1,0 +1,48 @@
+{
+  "name": "api",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start:dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/src/main.js",
+    "pretest": "npm run prisma:generate",
+    "test": "tsc -p tsconfig.tests.json && node dist/tests/rating.test.js && node dist/tests/teams.test.js && node dist/tests/swiss.test.js && node dist/tests/groups.test.js && node dist/tests/bracket-bye.test.js && node dist/tests/tournament-manual-draw.test.js && node dist/tests/application-auto-join.test.js && node dist/tests/booking-pricing.test.js && node dist/tests/club-table-inventory.test.js && node dist/tests/special-access.test.js && node dist/tests/organizer-flow.test.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:seed": "ts-node prisma/seed.ts",
+    "seed:qa": "ts-node prisma/seed.qa.ts",
+    "db:clean-demo": "ts-node prisma/clean-demo.ts",
+    "pretypecheck": "npm run prisma:generate",
+    "typecheck": "tsc --noEmit --incremental false"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.3",
+    "@nestjs/config": "^4.0.0",
+    "@nestjs/core": "^11.0.3",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/passport": "^11.0.4",
+    "@nestjs/platform-express": "^11.0.3",
+    "@nestjs/swagger": "^11.0.5",
+    "@prisma/client": "^6.2.1",
+    "bcrypt": "^5.1.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "nodemailer": "^8.0.4",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@types/bcrypt": "^5.0.2",
+    "@types/node": "^22.10.7",
+    "@types/nodemailer": "^7.0.11",
+    "@types/passport-jwt": "^4.0.1",
+    "prisma": "^6.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,36 @@
+node_modules/
+apps/*/node_modules/
+
+apps/web/.next/
+apps/api/dist/
+apps/bot/dist/
+apps/web/tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+.edge-hardening/
+.tunnel/
+.vscode/
+apps/api/.email-outbox/
+db-backups/
+backup/
+billiard-platform/
+Новая папка/
+
+*.zip
+*.rar
+
+# Windows reserved filename junk (blocks git add)
+nul
+**/nul
+
+# Nested duplicate export of the whole project
+billuz-share-20260612-160650/
+
+*.log
+.env
+apps/web/.env.local
+apps/web/.env.production
+apps/api/.env
+apps/api/.env.production
+apps/bot/.env
+apps/bot/.env.production
