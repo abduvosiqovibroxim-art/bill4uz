@@ -7,7 +7,7 @@ import { ErrorState, LoadingState } from "@/components/DataState";
 import { useAuth } from "@/components/AuthProvider";
 import { useClubsQuery, useImportClubsFromMapAdminMutation } from "@/lib/api/hooks";
 import { getApiPayloadMessage, getUserFacingApiError } from "@/lib/api/errors";
-import { isOpenNow, phoneHref, routeHref, splitPhones, telegramHref } from "@/lib/clubContact";
+import { phoneHref, routeHref, splitPhones, telegramHref } from "@/lib/clubContact";
 import { useI18n } from "@/lib/i18n";
 import type { Club, LocalizedText } from "@/lib/types";
 
@@ -136,42 +136,24 @@ export function BookingPageClient() {
       </section>
 
       <section>
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Clubs list */}
-          <div className="lg:col-span-1 space-y-4 lg:h-[600px] lg:overflow-y-auto lg:pr-2 booking-scroll">
-            {clubs.length === 0 ? (
-              <BookingEmptyPanel
-                isAdmin={user?.role === "ADMIN"}
-                labels={c}
-                feedback={feedback}
-                isImporting={importMutation.isPending}
-                onImport={runImport}
-              />
-            ) : (
-              clubs.map((club) => (
-                <ClubListCard
-                  key={club.id}
-                  club={club}
-                  isSelected={club.id === selectedClub?.id}
-                  labels={c}
-                  text={text}
-                  onSelect={() => setSelectedClubId(club.id)}
-                />
-              ))
-            )}
-          </div>
-
-          {/* Map */}
-          <div className="lg:col-span-2 relative rounded-lg overflow-hidden lg:sticky lg:top-6 lg:h-[600px]" style={{ border: "1px solid var(--card-border)", minHeight: "600px" }}>
+        {clubs.length === 0 ? (
+          <BookingEmptyPanel
+            isAdmin={user?.role === "ADMIN"}
+            labels={c}
+            feedback={feedback}
+            isImporting={importMutation.isPending}
+            onImport={runImport}
+          />
+        ) : (
+          <div className="relative rounded-lg overflow-hidden lg:h-[600px]" style={{ border: "1px solid var(--card-border)", minHeight: "600px" }}>
             <ClubMap
               clubs={clubs}
               selectedClubId={selectedClub?.id}
-              emptyMessage={clubs.length === 0 ? c.empty : undefined}
               onSelectClub={(club) => setSelectedClubId(club.id)}
             />
             {selectedClub ? <SelectedClubSheet club={selectedClub} labels={c} text={text} /> : null}
           </div>
-        </div>
+        )}
       </section>
       </div>
     </div>
@@ -205,101 +187,6 @@ function BookingEmptyPanel({
         </div>
       ) : null}
       {feedback ? <p className="mt-3 text-sm" style={{ color: "var(--muted)" }}>{feedback}</p> : null}
-    </article>
-  );
-}
-
-function ClubListCard({
-  club,
-  isSelected,
-  labels,
-  text,
-  onSelect
-}: {
-  club: Club;
-  isSelected: boolean;
-  labels: BookingLabels;
-  text: TextFn;
-  onSelect: () => void;
-}) {
-  const status = resolveStatus(text(club.workHours), labels);
-  const callHref = phoneHref(club.phone);
-  const isOpen = isOpenNow(text(club.workHours));
-  const logo = club.coverImageUrl || club.coverUrl;
-  const phones = splitPhones(club.phone);
-  const addressText = text(club.address);
-  const flag = club.countryCode && /^[a-z]{2}$/.test(club.countryCode) ? club.countryCode : null;
-
-  return (
-    <article className="rounded-xl transition-all cursor-pointer overflow-hidden hover:scale-[1.01]" style={{ background: isSelected ? "var(--surface-selected)" : "var(--surface)", border: isSelected ? "2px solid var(--accent)" : "1px solid var(--card-border)", boxShadow: isSelected ? "var(--shadow-glow)" : "var(--shadow-soft)" }} onClick={onSelect}>
-      <div className="p-5 flex flex-col items-center text-center">
-        {/* Logo */}
-        <div className="h-24 w-24 mb-3 rounded-2xl flex items-center justify-center overflow-hidden" style={{ background: "var(--surface-soft)", border: "1px solid var(--card-border)" }}>
-          {logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={text(club.name)} className="h-full w-full object-contain p-1.5" />
-          ) : (
-            <span className="text-3xl" aria-hidden="true">🎱</span>
-          )}
-        </div>
-
-        {/* Flag + name */}
-        <h2 className="flex items-center justify-center gap-2 text-lg font-black leading-tight" style={{ color: "var(--text)" }}>
-          {flag ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={`https://flagcdn.com/24x18/${flag}.png`} alt="" width={20} height={15} className="shrink-0 rounded-sm" style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.12)" }} />
-          ) : null}
-          <span>{text(club.name)}</span>
-          {club.isVerified ? <span style={{ color: "var(--emerald)" }}>✓</span> : null}
-        </h2>
-
-        {/* Status + rating + tables */}
-        <div className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-bold">
-          {isOpen !== null ? (
-            <span className="flex items-center gap-1.5" style={{ color: isOpen ? "var(--danger)" : "var(--muted)" }}>
-              <span style={{ fontSize: "9px" }}>●</span>{status}
-            </span>
-          ) : null}
-          {club.rating !== null ? (
-            <span style={{ color: "var(--accent)" }}>⭐ {club.rating.toFixed(1)}</span>
-          ) : null}
-          {club.tableCount > 0 ? (
-            <span style={{ color: "var(--text)" }}>🎱 {club.tableCount}</span>
-          ) : null}
-        </div>
-
-        {/* Address */}
-        <p className="mt-3 text-sm" style={{ color: "var(--muted)" }}>
-          <span className="font-bold" style={{ color: "var(--text)" }}>{labels.address}:</span> {addressText || "—"}
-        </p>
-
-        {/* Phone */}
-        <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-          <span className="font-bold" style={{ color: "var(--text)" }}>{labels.phone}:</span>{" "}
-          {phones.length === 0 ? (
-            <span>{labels.phoneMissing}</span>
-          ) : (
-            phones.map((p, index) => (
-              <span key={p}>
-                {index > 0 ? ", " : ""}
-                <a href={phoneHref(p) ?? undefined} className="font-semibold hover:underline" style={{ color: "var(--text)" }} onClick={(e) => e.stopPropagation()}>{p}</a>
-              </span>
-            ))
-          )}
-        </p>
-
-        {/* Actions */}
-        <div className="mt-4 flex w-full gap-2">
-          {callHref ? (
-            <a href={callHref} className="flex-1 px-4 py-2.5 text-center text-sm font-bold rounded-lg transition-all hover:scale-105" style={{ background: "var(--accent)", color: "var(--bg)" }} onClick={(e) => e.stopPropagation()}>
-              {labels.call}
-            </a>
-          ) : null}
-          <button type="button" className="flex-1 px-4 py-2.5 text-sm font-bold rounded-lg transition-all hover:scale-105" style={{ border: "1px solid var(--accent)", color: "var(--accent)" }}>
-            {labels.onMap}
-          </button>
-        </div>
-      </div>
     </article>
   );
 }
@@ -405,13 +292,4 @@ function formatImportResult(labels: BookingLabels, result: { added: number; upda
     .replace("{added}", String(result.added))
     .replace("{updated}", String(result.updated))
     .replace("{skipped}", String(result.skipped));
-}
-
-function resolveStatus(workingHours: string, labels: BookingLabels) {
-  const status = isOpenNow(workingHours);
-  if (status === null) {
-    return labels.unknownStatus;
-  }
-
-  return status ? labels.openNow : labels.closedNow;
 }
