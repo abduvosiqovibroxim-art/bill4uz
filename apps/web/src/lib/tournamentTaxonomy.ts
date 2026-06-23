@@ -93,10 +93,9 @@ const disciplineLabelByKey: Record<DisciplineKey, LocalizedLabel> = {
   pool9: { ru: "Пул-9", uz: "Pul-9", en: "Pool-9" },
   pool10: { ru: "Пул-10", uz: "Pul-10", en: "Pool-10" },
   pool141: { ru: "14.1", uz: "14.1", en: "14.1" },
-  snooker: { ru: "Снукер", uz: "Snuker", en: "Snooker" }
+  snooker: { ru: "Снукер", uz: "Snuker", en: "Snooker" },
+  chineseBilliards: { ru: "Китайский бильярд", uz: "Xitoy bilyardi", en: "Chinese billiards" }
 };
-
-export const activeDisciplineKeys = new Set<DisciplineKey>(["freePyramid", "russianPyramid"]);
 
 const disciplineOptionKeys: DisciplineKey[] = [
   "freePyramid",
@@ -108,8 +107,13 @@ const disciplineOptionKeys: DisciplineKey[] = [
   "pool9",
   "pool10",
   "pool141",
-  "snooker"
+  "snooker",
+  "chineseBilliards"
 ];
+
+// All disciplines are selectable. "Soon"/disabled gating applies only to
+// unsupported bracket systems (see bracketSystemOptions), not to disciplines.
+export const activeDisciplineKeys = new Set<DisciplineKey>(disciplineOptionKeys);
 
 export const disciplineOptions: TaxonomyOption<DisciplineKey>[] = disciplineOptionKeys.map((value) => ({
   value,
@@ -142,7 +146,13 @@ const disciplineAliases = new Map<string, DisciplineKey>([
   ["пул10", "pool10"],
   ["141", "pool141"],
   ["snooker", "snooker"],
-  ["снукер", "snooker"]
+  ["снукер", "snooker"],
+  ["chinesebilliards", "chineseBilliards"],
+  ["chinese", "chineseBilliards"],
+  ["chinese8", "chineseBilliards"],
+  ["heyball", "chineseBilliards"],
+  ["китайскийбильярд", "chineseBilliards"],
+  ["xitoybilyardi", "chineseBilliards"]
 ]);
 
 export function disciplineKeyFromName(name?: string | null): DisciplineKey | null {

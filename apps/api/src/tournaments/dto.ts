@@ -313,6 +313,9 @@ export interface TournamentBracketMatchDto {
   winnerId: string | null;
   winnerTo: string | null;
   loserTo: string | null;
+  isThirdPlace: boolean;
+  isFinalReset: boolean;
+  groupIndex: number | null;
 }
 
 export interface TournamentBracketRoundDto {
@@ -320,11 +323,13 @@ export interface TournamentBracketRoundDto {
   label: string;
   phase: TournamentMatchPhase;
   roundNumber: number;
+  placeRange: string | null;
   matches: TournamentBracketMatchDto[];
 }
 
 export interface TournamentResultDto {
   placement: number;
+  placeLabel: string;
   label: string;
   player: TournamentMatchPlayerDto;
   rating: number;

@@ -71,6 +71,22 @@ export class BracketTournamentsController {
   }
 
   @UseGuards(RateLimitGuard, JwtAccessGuard, RolesGuard)
+  @Post(":id/participants/:participantId/disqualify")
+  @Roles(Role.ORGANIZER, Role.ADMIN)
+  @RateLimit({ bucket: "bracket-participant-disqualify", limit: 20, windowMs: 60_000 })
+  async disqualifyParticipant(
+    @Param() params: BracketTournamentParticipantParamDto,
+    @Req() request: { user: RequestUser }
+  ) {
+    const participants = await this.bracketTournamentsService.disqualifyParticipant(
+      params.id,
+      params.participantId,
+      request.user
+    );
+    return sendBracketSuccess("Participant disqualified.", participants);
+  }
+
+  @UseGuards(RateLimitGuard, JwtAccessGuard, RolesGuard)
   @Post(":id/generate-bracket")
   @Roles(Role.ORGANIZER, Role.ADMIN)
   @RateLimit({ bucket: "bracket-generate", limit: 5, windowMs: 60_000 })

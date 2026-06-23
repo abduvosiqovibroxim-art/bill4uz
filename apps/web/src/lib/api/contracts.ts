@@ -157,6 +157,12 @@ export interface RawPlayer {
   levelPoints: number;
   tournamentsPlayed: number;
   tournamentWins: number;
+  mmr?: number;
+  winStreak?: number;
+  bestWinStreak?: number;
+  winPercentage?: number;
+  worldRank?: number | null;
+  recentMatches?: RawPlayerRecentMatch[];
   level: "NOVICE" | "AMATEUR" | "STRONG_AMATEUR" | "SEMI_PRO" | "PRO";
   currentLevel?: "NOVICE" | "AMATEUR" | "STRONG_AMATEUR" | "SEMI_PRO" | "PRO";
   currentLevelLabel?: { ru: string; uz: string; en: string };
@@ -165,11 +171,55 @@ export interface RawPlayer {
   pointsToNextLevel?: number;
   achievements?: Array<string | { ru: string; uz: string; en: string }>;
   bio?: string | { ru: string; uz: string; en: string } | null;
+  disciplines?: string[];
   city?: RawCity;
   country?: RawCountry;
   club?: RawClub | RawClubPreview | null;
   applications?: RawApplication[];
   tournamentHistory?: RawTournament[];
+}
+
+export interface RawPlayerRecentMatch {
+  id: string;
+  tournamentId: string;
+  tournamentTitle?: string | null;
+  opponentId?: string | null;
+  opponentName: string;
+  scoreFor?: number | null;
+  scoreAgainst?: number | null;
+  isWin: boolean;
+  playedAt?: string | null;
+}
+
+export interface RawCoach {
+  id: string;
+  fullName: string;
+  photoUrl?: string | null;
+  region?: string | null;
+  cityId: string;
+  cityName?: string | null;
+  countryId: string;
+  countryName?: string | null;
+  clubId?: string | null;
+  clubName?: string | null;
+  qualification: "INSTRUCTOR" | "MASTER" | "INTERNATIONAL_MASTER" | "HONORED_COACH";
+  specialization: string;
+  disciplines: string[];
+  experienceYears: number;
+  studentsCount: number;
+  personalPriceMinor: number;
+  groupPriceMinor: number;
+  bio?: string | null;
+  rating?: number | null;
+}
+
+export interface RawCoachDetail extends RawCoach {
+  achievements?: string[];
+  phone?: string | null;
+  telegram?: string | null;
+  gallery?: Array<{ id: string; url: string }>;
+  reviews?: Array<{ id: string; authorName: string; rating: number; text: string; createdAt: string }>;
+  students?: Array<{ id: string; name: string; achievement?: string | null }>;
 }
 
 export interface RawUser {
@@ -198,6 +248,9 @@ export interface RawMatch {
   winnerId?: string | null;
   winnerTo?: string | null;
   loserTo?: string | null;
+  isThirdPlace?: boolean;
+  isFinalReset?: boolean;
+  groupIndex?: number | null;
   playerA?: RawPlayer;
   playerB?: RawPlayer;
 }
@@ -222,11 +275,13 @@ export interface RawBracketRound {
   label: string;
   phase: "upper" | "lower" | "final";
   roundNumber: number;
+  placeRange?: string | null;
   matches: RawMatch[];
 }
 
 export interface RawTournamentResult {
   placement: number;
+  placeLabel?: string;
   label: string;
   rating: number;
   player: {

@@ -9,13 +9,15 @@ import { DisputeStatus, Role, TeamMemberStatus } from "@prisma/client";
 import { RequestUser } from "../auth/dto";
 import { PrismaService } from "../common/prisma.service";
 import { AuditService } from "../platform/audit.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { FileDisputeDto, ResolveDisputeDto } from "./dto";
 
 @Injectable()
 export class DisputesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly auditService: AuditService
+    private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService
   ) {}
 
   async fileDispute(actor: RequestUser, matchId: string, dto: FileDisputeDto) {
@@ -79,6 +81,8 @@ export class DisputesService {
       metadata: { disputeId: dispute.id, tournamentId: match.tournamentId }
     });
 
+    await this.notificationsService.notifyDisputeFiled(dispute.id);
+
     return dispute;
   }
 
@@ -128,6 +132,8 @@ export class DisputesService {
       entityId: dispute.matchId,
       metadata: { disputeId, status: dto.status }
     });
+
+    await this.notificationsService.notifyDisputeResolved(disputeId);
 
     return updated;
   }

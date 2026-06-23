@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { ClubGallery } from "@/components/clubs/ClubGallery";
-import { ClubCoverImage } from "@/components/clubs/ClubCoverImage";
 import { ClubAmenities } from "@/components/clubs/ClubAmenities";
 import { ErrorState, LoadingState } from "@/components/DataState";
 import { useClubQuery } from "@/lib/api/hooks";
 import { useI18n } from "@/lib/i18n";
-import { phoneHref, routeHref, telegramHref } from "@/lib/clubContact";
+import { phoneHref, routeHref, splitPhones, telegramHref } from "@/lib/clubContact";
 
 interface ClubPageClientProps {
   clubId: string;
@@ -29,6 +28,9 @@ export function ClubPageClient({ clubId }: ClubPageClientProps) {
   const callHref = phoneHref(club.phone);
   const tgHref = telegramHref(club.telegram);
   const directionsHref = routeHref(club, text(club.name));
+  const logo = club.coverImageUrl || club.coverUrl;
+  const flag = club.countryCode && /^[a-z]{2}$/.test(club.countryCode) ? club.countryCode : null;
+  const phones = splitPhones(club.phone);
 
   const copy = {
     phone: locale === "ru" ? "Телефон" : locale === "uz" ? "Telefon" : "Phone",
@@ -53,20 +55,51 @@ export function ClubPageClient({ clubId }: ClubPageClientProps) {
           {copy.backToMap}
         </Link>
 
-        <div className="flex items-start justify-between mb-6">
-          <h1 className="text-5xl md:text-6xl font-black leading-tight" style={{ color: "var(--text)" }}>{text(club.name)}</h1>
-        </div>
-      </section>
+        <div className="rounded-xl p-8 flex flex-col items-center text-center" style={{ background: "var(--surface)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-soft)" }}>
+          {/* Logo */}
+          <div className="h-28 w-28 mb-4 rounded-2xl flex items-center justify-center overflow-hidden" style={{ background: "var(--surface-soft)", border: "1px solid var(--card-border)" }}>
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt={text(club.name)} className="h-full w-full object-contain p-2" />
+            ) : (
+              <span className="text-5xl" aria-hidden="true">🎱</span>
+            )}
+          </div>
 
-      {/* Cover Image */}
-      <section className="container-shell pb-6">
-        <ClubCoverImage
-          coverImageUrl={club.coverImageUrl || club.coverUrl}
-          clubName={text(club.name)}
-          rating={club.rating}
-          reviewsCount={club.reviewsCount}
-          isVerified={club.isVerified}
-        />
+          {/* Flag + name */}
+          <h1 className="flex items-center justify-center gap-3 text-3xl md:text-4xl font-black leading-tight" style={{ color: "var(--text)" }}>
+            {flag ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={`https://flagcdn.com/32x24/${flag}.png`} alt="" width={30} height={22} className="shrink-0 rounded" style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.12)" }} />
+            ) : null}
+            <span>{text(club.name)}</span>
+            {club.isVerified ? <span style={{ color: "var(--emerald)" }}>✓</span> : null}
+          </h1>
+
+          {club.rating !== null ? (
+            <p className="mt-2 text-base font-bold" style={{ color: "var(--accent)" }}>
+              ⭐ {club.rating.toFixed(1)}{club.reviewsCount > 0 ? ` (${club.reviewsCount})` : ""}
+            </p>
+          ) : null}
+
+          {/* Address */}
+          <p className="mt-3 text-base" style={{ color: "var(--muted)" }}>
+            <span className="font-bold" style={{ color: "var(--text)" }}>{copy.address}:</span> {text(club.address) || "—"}
+          </p>
+
+          {/* Phone */}
+          {phones.length > 0 ? (
+            <p className="mt-1 text-base" style={{ color: "var(--muted)" }}>
+              <span className="font-bold" style={{ color: "var(--text)" }}>{copy.phone}:</span>{" "}
+              {phones.map((p, index) => (
+                <span key={p}>
+                  {index > 0 ? ", " : ""}
+                  <a href={phoneHref(p) ?? undefined} className="font-semibold hover:underline" style={{ color: "var(--text)" }}>{p}</a>
+                </span>
+              ))}
+            </p>
+          ) : null}
+        </div>
       </section>
 
       {/* Info Grid */}
@@ -109,7 +142,16 @@ export function ClubPageClient({ clubId }: ClubPageClientProps) {
               <div className="space-y-3 mb-4">
                 <div>
                   <div className="text-xs font-semibold uppercase mb-1" style={{ color: "var(--muted)" }}>{copy.phone}</div>
-                  <div className="text-base" style={{ color: "var(--text)" }}>{club.phone || "-"}</div>
+                  <div className="text-base" style={{ color: "var(--text)" }}>
+                    {phones.length === 0
+                      ? "-"
+                      : phones.map((p, index) => (
+                          <span key={p}>
+                            {index > 0 ? ", " : ""}
+                            <a href={phoneHref(p) ?? undefined} className="hover:underline" style={{ color: "var(--text)" }}>{p}</a>
+                          </span>
+                        ))}
+                  </div>
                 </div>
 
                 <div>

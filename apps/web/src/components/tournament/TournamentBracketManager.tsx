@@ -6,6 +6,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
 import {
   useAddBracketParticipantsMutation,
   useBracketParticipantsQuery,
+  useDisqualifyParticipantMutation,
   useClubsQuery,
   useDisciplinesQuery,
   useGenerateBracketMutation,
@@ -15,6 +16,7 @@ import {
   useTournamentApplicationsQuery,
   useTournamentQuery,
   useUpdateBracketMatchResultMutation,
+  useRollbackBracketMatchMutation,
   useUpdateBracketMatchStatusMutation,
   useUpdateTournamentAdminMutation
 } from "@/lib/api/hooks";
@@ -29,6 +31,7 @@ import type {
 import { getUserFacingApiError } from "@/lib/api/errors";
 import { FormInput, FormSelect, FormTextarea, GlowButton, MetricTile, NoticePanel, SurfaceCard } from "../ui";
 import { TournamentBracket } from "./TournamentBracket";
+import { DisputesPanel } from "./DisputesPanel";
 
 type TournamentStatusValue = "DRAFT" | "REGISTRATION" | "LIVE" | "FINISHED";
 type TournamentFormatValue = "SINGLE_ELIMINATION";
@@ -83,8 +86,10 @@ export function TournamentBracketManager({
   const applicationsQuery = useTournamentApplicationsQuery(tournamentId);
   const addParticipantsMutation = useAddBracketParticipantsMutation(tournamentId);
   const removeParticipantMutation = useRemoveBracketParticipantMutation(tournamentId);
+  const disqualifyParticipantMutation = useDisqualifyParticipantMutation(tournamentId);
   const generateBracketMutation = useGenerateBracketMutation(tournamentId);
   const updateMatchResultMutation = useUpdateBracketMatchResultMutation(tournamentId);
+  const rollbackMatchMutation = useRollbackBracketMatchMutation(tournamentId);
   const updateMatchStatusMutation = useUpdateBracketMatchStatusMutation(tournamentId);
   const updateTournamentMutation = useUpdateTournamentAdminMutation();
   const moderateApplicationMutation = useModerateApplicationMutation();
@@ -237,6 +242,33 @@ export function TournamentBracketManager({
     }
   }
 
+  const disqualifyText = locale === "ru" ? "Дисквалифицировать" : locale === "uz" ? "Diskvalifikatsiya" : "Disqualify";
+
+  async function handleDisqualifyParticipant(participant: BracketPoolParticipant) {
+    const confirmText =
+      locale === "ru"
+        ? "Дисквалифицировать участника"
+        : locale === "uz"
+          ? "Ishtirokchini diskvalifikatsiya qilish"
+          : "Disqualify participant";
+    if (!window.confirm(`${confirmText}: ${participant.fullName}?`)) {
+      return;
+    }
+
+    try {
+      await disqualifyParticipantMutation.mutateAsync(participant.id);
+      setFeedback(
+        locale === "ru"
+          ? "Участник дисквалифицирован."
+          : locale === "uz"
+            ? "Ishtirokchi diskvalifikatsiya qilindi."
+            : "Participant disqualified."
+      );
+    } catch (error) {
+      setFeedback(toErrorMessage(error, locale, t, t("system.errorText")));
+    }
+  }
+
   async function handleModerateApplication(application: ApplicationEntry, status: "APPROVED" | "REJECTED") {
     try {
       await moderateApplicationMutation.mutateAsync({ id: application.id, status });
@@ -299,6 +331,23 @@ export function TournamentBracketManager({
         [match.id]: { winnerId: "", player1Score: "", player2Score: "" }
       }));
       setFeedback(t("tournamentCenter.management.resultSaved"));
+    } catch (error) {
+      setFeedback(toErrorMessage(error, locale, t, t("system.errorText")));
+    }
+  }
+
+  async function handleRollbackMatch(match: TournamentMatch) {
+    const confirmed = typeof window === "undefined" || window.confirm(t("tournamentCenter.management.rollbackConfirm"));
+    if (!confirmed) {
+      return;
+    }
+    try {
+      await rollbackMatchMutation.mutateAsync(match.id);
+      setMatchForms((current) => ({
+        ...current,
+        [match.id]: { winnerId: "", player1Score: "", player2Score: "" }
+      }));
+      setFeedback(t("tournamentCenter.management.rollbackDone"));
     } catch (error) {
       setFeedback(toErrorMessage(error, locale, t, t("system.errorText")));
     }
@@ -611,9 +660,15 @@ export function TournamentBracketManager({
           canRemove={!poolLocked}
           isRemoving={removeParticipantMutation.isPending}
           onRemove={(participant) => void handleRemoveParticipant(participant)}
+          canDisqualify={poolLocked}
+          isDisqualifying={disqualifyParticipantMutation.isPending}
+          onDisqualify={(participant) => void handleDisqualifyParticipant(participant)}
+          disqualifyLabel={disqualifyText}
           t={t}
         />
       </SurfaceCard>
+
+      <DisputesPanel tournamentId={tournamentId} />
 
       <SurfaceCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -720,6 +775,19 @@ export function TournamentBracketManager({
                   </div>
                 ) : null}
 
+                {match.status === "finished" && !match.isBye && tournament.status !== "finished" ? (
+                  <div className="match-status-actions mt-4">
+                    <GlowButton
+                      variant="secondary"
+                      className="button-status button-status-pending"
+                      onClick={() => void handleRollbackMatch(match)}
+                      disabled={rollbackMatchMutation.isPending}
+                    >
+                      {t("tournamentCenter.management.rollback")}
+                    </GlowButton>
+                  </div>
+                ) : null}
+
                 {hasPlayableMatch ? (
                   <div className="mt-4 grid gap-3">
                     <FormSelect
@@ -785,12 +853,20 @@ function PoolParticipantsTable({
   canRemove,
   isRemoving,
   onRemove,
+  canDisqualify,
+  isDisqualifying,
+  onDisqualify,
+  disqualifyLabel,
   t
 }: {
   participants: BracketPoolParticipant[];
   canRemove: boolean;
   isRemoving: boolean;
   onRemove: (participant: BracketPoolParticipant) => void;
+  canDisqualify: boolean;
+  isDisqualifying: boolean;
+  onDisqualify: (participant: BracketPoolParticipant) => void;
+  disqualifyLabel: string;
   t: (path: string) => string;
 }) {
   if (participants.length === 0) {
@@ -823,6 +899,11 @@ function PoolParticipantsTable({
                 {t("tournamentCenter.management.removeParticipant")}
               </GlowButton>
             ) : null}
+            {canDisqualify ? (
+              <GlowButton variant="secondary" onClick={() => onDisqualify(participant)} disabled={isDisqualifying}>
+                {disqualifyLabel}
+              </GlowButton>
+            ) : null}
           </div>
         ))}
       </div>
@@ -837,7 +918,7 @@ function PoolParticipantsTable({
               <th>{t("tournamentCenter.participants.city")}</th>
               <th>{t("tournamentCenter.participants.rating")}</th>
               <th>{t("tournamentCenter.management.record")}</th>
-              {canRemove ? <th>{t("tournamentCenter.management.actions")}</th> : null}
+              {canRemove || canDisqualify ? <th>{t("tournamentCenter.management.actions")}</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -859,11 +940,20 @@ function PoolParticipantsTable({
                 <td>
                   {participant.wins}/{participant.losses}
                 </td>
-                {canRemove ? (
+                {canRemove || canDisqualify ? (
                   <td>
-                    <GlowButton variant="secondary" onClick={() => onRemove(participant)} disabled={isRemoving}>
-                      {t("tournamentCenter.management.removeParticipant")}
-                    </GlowButton>
+                    <div className="flex gap-2">
+                      {canRemove ? (
+                        <GlowButton variant="secondary" onClick={() => onRemove(participant)} disabled={isRemoving}>
+                          {t("tournamentCenter.management.removeParticipant")}
+                        </GlowButton>
+                      ) : null}
+                      {canDisqualify ? (
+                        <GlowButton variant="secondary" onClick={() => onDisqualify(participant)} disabled={isDisqualifying}>
+                          {disqualifyLabel}
+                        </GlowButton>
+                      ) : null}
+                    </div>
                   </td>
                 ) : null}
               </tr>

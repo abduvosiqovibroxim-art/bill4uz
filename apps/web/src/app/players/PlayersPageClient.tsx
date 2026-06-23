@@ -6,12 +6,17 @@ import { ErrorState, LoadingState } from "@/components/DataState";
 import { usePlayersQuery } from "@/lib/api/hooks";
 import { uzbekCities } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n";
-import { FormInput, FormSelect } from "@/components/ui";
+import { FormInput, FormSelect, GlowButton } from "@/components/ui";
+
+const ALL = "all";
 
 export function PlayersPageClient() {
-  const { t, formatNumber } = useI18n();
+  const { t, text, formatNumber } = useI18n();
   const [search, setSearch] = useState("");
-  const [city, setCity] = useState("all");
+  const [country, setCountry] = useState(ALL);
+  const [city, setCity] = useState(ALL);
+  const [ratingLevel, setRatingLevel] = useState(ALL);
+  const [discipline, setDiscipline] = useState(ALL);
   const [sortBy, setSortBy] = useState("elo");
   const playersQuery = usePlayersQuery();
 
@@ -25,16 +30,45 @@ export function PlayersPageClient() {
     };
   }, [allPlayers]);
 
+  const options = useMemo(() => {
+    const countries = new Set<string>();
+    const levels = new Map<string, string>();
+    const disciplines = new Set<string>();
+    for (const player of allPlayers) {
+      if (player.countryKey) countries.add(player.countryKey);
+      if (player.currentLevel) levels.set(player.currentLevel, text(player.currentLevelLabel));
+      player.disciplines.forEach((item) => disciplines.add(item));
+    }
+    return {
+      countries: [...countries].sort(),
+      levels: [...levels.entries()],
+      disciplines: [...disciplines].sort()
+    };
+  }, [allPlayers, text]);
+
   const ranked = useMemo(() => {
     const query = search.trim().toLowerCase();
     return [...allPlayers]
       .filter((item) => {
-        if (city !== "all" && item.cityKey !== city) return false;
+        if (country !== ALL && item.countryKey !== country) return false;
+        if (city !== ALL && item.cityKey !== city) return false;
+        if (ratingLevel !== ALL && item.currentLevel !== ratingLevel) return false;
+        if (discipline !== ALL && !item.disciplines.includes(discipline)) return false;
         if (query && !item.fullName.toLowerCase().includes(query)) return false;
         return true;
       })
       .sort((left, right) => (sortBy === "wins" ? right.wins - left.wins : right.elo - left.elo));
-  }, [allPlayers, city, search, sortBy]);
+  }, [allPlayers, country, city, ratingLevel, discipline, search, sortBy]);
+
+  const hasFilters = Boolean(search) || country !== ALL || city !== ALL || ratingLevel !== ALL || discipline !== ALL;
+
+  function clearFilters() {
+    setSearch("");
+    setCountry(ALL);
+    setCity(ALL);
+    setRatingLevel(ALL);
+    setDiscipline(ALL);
+  }
 
   const hasPodium = ranked.length >= 3;
   const podium = hasPodium ? ranked.slice(0, 3) : [];
@@ -75,13 +109,37 @@ export function PlayersPageClient() {
 
       {/* Filters */}
       <section className="container-shell pb-8">
-        <div className="grid items-center gap-3 rounded-xl p-4 md:grid-cols-[1fr_auto_auto_auto] md:p-5" style={{ background: "var(--surface)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-soft)" }}>
+        <div className="grid items-center gap-3 rounded-xl p-4 md:grid-cols-3 md:p-5 xl:grid-cols-6" style={{ background: "var(--surface)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-soft)" }}>
           <FormInput placeholder={t("players.searchPlaceholder")} value={search} onChange={(event) => setSearch(event.target.value)} />
+          <FormSelect value={country} onChange={(event) => setCountry(event.target.value)}>
+            <option value={ALL}>{t("players.countryPlaceholder")}</option>
+            {options.countries.map((countryKey) => (
+              <option key={countryKey} value={countryKey}>
+                {t(`common.countries.${countryKey}`)}
+              </option>
+            ))}
+          </FormSelect>
           <FormSelect value={city} onChange={(event) => setCity(event.target.value)}>
-            <option value="all">{t("players.cityPlaceholder")}</option>
+            <option value={ALL}>{t("players.cityPlaceholder")}</option>
             {uzbekCities.map((cityKey) => (
               <option key={cityKey} value={cityKey}>
                 {t(`common.cities.${cityKey}`)}
+              </option>
+            ))}
+          </FormSelect>
+          <FormSelect value={ratingLevel} onChange={(event) => setRatingLevel(event.target.value)}>
+            <option value={ALL}>{t("players.ratingPlaceholder")}</option>
+            {options.levels.map(([levelKey, label]) => (
+              <option key={levelKey} value={levelKey}>
+                {label}
+              </option>
+            ))}
+          </FormSelect>
+          <FormSelect value={discipline} onChange={(event) => setDiscipline(event.target.value)}>
+            <option value={ALL}>{t("players.disciplinePlaceholder")}</option>
+            {options.disciplines.map((item) => (
+              <option key={item} value={item}>
+                {item}
               </option>
             ))}
           </FormSelect>
@@ -89,9 +147,14 @@ export function PlayersPageClient() {
             <option value="elo">{t("players.sortByElo")}</option>
             <option value="wins">{t("players.sortByWins")}</option>
           </FormSelect>
-          <span className="whitespace-nowrap text-center text-sm font-semibold md:px-2" style={{ color: "var(--muted)" }}>
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <span className="text-sm font-semibold" style={{ color: "var(--muted)" }}>
             {formatNumber(ranked.length)}
           </span>
+          <GlowButton variant="ghost" onClick={clearFilters} disabled={!hasFilters}>
+            {t("players.clearFilters")}
+          </GlowButton>
         </div>
       </section>
 

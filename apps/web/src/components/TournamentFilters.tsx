@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { useTournamentsQuery } from "@/lib/api/hooks";
-import { tournamentDisciplines, uzbekCities } from "@/lib/constants";
+import { uzbekCities } from "@/lib/constants";
+import { disciplineOptions } from "@/lib/tournamentTaxonomy";
 import { useI18n } from "@/lib/i18n";
 import { EmptyState, ErrorState, LoadingState } from "./DataState";
 import { TournamentCard } from "./cards";
 import { FormSelect, SurfaceCard } from "./ui";
 
 export function TournamentFilters() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [city, setCity] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [discipline, setDiscipline] = useState<string>("all");
@@ -42,9 +43,9 @@ export function TournamentFilters() {
 
         <FormSelect value={discipline} onChange={(event) => setDiscipline(event.target.value)}>
           <option value="all">{t("tournaments.disciplinePlaceholder")}</option>
-          {tournamentDisciplines.map((item) => (
-            <option key={item} value={item}>
-              {t(`common.disciplines.${item}`)}
+          {disciplineOptions.map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label[locale]}
             </option>
           ))}
         </FormSelect>

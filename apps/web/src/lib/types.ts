@@ -12,7 +12,8 @@ export type DisciplineKey =
   | "pool9"
   | "pool10"
   | "pool141"
-  | "snooker";
+  | "snooker"
+  | "chineseBilliards";
 export type CategoryKey = "platform" | "tournament" | "product" | "media";
 export type BilliardKindKey = "pyramid" | "pool" | "snooker";
 export type TournamentCategoryKey =
@@ -69,6 +70,7 @@ export interface Club {
   id: string;
   userId?: string | null;
   countryId?: string | null;
+  countryCode: string | null;
   cityId?: string | null;
   name: LocalizedText;
   cityKey: string;
@@ -168,6 +170,10 @@ export interface Player {
   levelPoints: number;
   tournamentsPlayed: number;
   tournamentWins: number;
+  mmr: number;
+  winStreak: number;
+  bestWinStreak: number;
+  winPercentage: number;
   currentLevel: PlayerLevelKey;
   currentLevelLabel: LocalizedText;
   nextLevel: PlayerLevelKey | null;
@@ -175,7 +181,55 @@ export interface Player {
   pointsToNextLevel: number;
   achievements: LocalizedText[];
   bio: LocalizedText | null;
+  disciplines: string[];
   club?: ClubPreview | null;
+}
+
+export type CoachQualificationKey = "INSTRUCTOR" | "MASTER" | "INTERNATIONAL_MASTER" | "HONORED_COACH";
+
+export interface Coach {
+  id: string;
+  fullName: string;
+  photoUrl: string | null;
+  region: string | null;
+  cityId: string;
+  cityName: string | null;
+  countryId: string;
+  countryName: string | null;
+  clubId: string | null;
+  clubName: string | null;
+  qualification: CoachQualificationKey;
+  specialization: string;
+  disciplines: string[];
+  experienceYears: number;
+  studentsCount: number;
+  personalPriceMinor: number;
+  groupPriceMinor: number;
+  bio: string | null;
+  rating: number | null;
+}
+
+export interface CoachReview {
+  id: string;
+  authorName: string;
+  rating: number;
+  text: string;
+  createdAt: string;
+}
+
+export interface CoachStudent {
+  id: string;
+  name: string;
+  achievement: string | null;
+}
+
+export interface CoachDetail extends Coach {
+  achievements: string[];
+  phone: string | null;
+  telegram: string | null;
+  gallery: Array<{ id: string; url: string }>;
+  reviews: CoachReview[];
+  students: CoachStudent[];
 }
 
 export interface NewsItem {
@@ -214,8 +268,48 @@ export interface TournamentMatch {
   winnerId: string | null;
   winnerTo: string | null;
   loserTo: string | null;
+  isThirdPlace: boolean;
+  isFinalReset: boolean;
+  groupIndex: number | null;
   playerA: TournamentMatchPlayer | null;
   playerB: TournamentMatchPlayer | null;
+}
+
+export interface TournamentStandingEntry {
+  position: number;
+  participantId: string;
+  name: string;
+  seed: number;
+  played: number;
+  wins: number;
+  losses: number;
+  points: number;
+  scoreFor: number;
+  scoreAgainst: number;
+  scoreDiff: number;
+}
+
+export interface TournamentStandings {
+  tournamentId: string;
+  system: string;
+  finished: boolean;
+  standings: TournamentStandingEntry[];
+}
+
+export type DisputeStatus = "PENDING" | "UPHELD" | "REJECTED";
+
+export interface DisputeEntry {
+  id: string;
+  matchId: string;
+  tournamentId: string;
+  filedByUserId: string;
+  filedBy: { id: string; email: string } | null;
+  match: { id: string; round: number; matchNumber: number } | null;
+  reason: string;
+  status: DisputeStatus;
+  resolution: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
 }
 
 export interface TournamentBracketRound {
@@ -223,6 +317,7 @@ export interface TournamentBracketRound {
   label: LocalizedText;
   phase: BracketPhase;
   roundNumber: number;
+  placeRange: string | null;
   matches: TournamentMatch[];
 }
 
@@ -250,6 +345,7 @@ export interface BracketPoolParticipant {
 
 export interface TournamentResultEntry {
   placement: number;
+  placeLabel: string;
   label: string;
   rating: number;
   player: TournamentMatchPlayer;
@@ -274,7 +370,21 @@ export interface TournamentDetail extends Tournament {
   regulation: TournamentRegulation;
 }
 
+export interface PlayerRecentMatch {
+  id: string;
+  tournamentId: string;
+  tournamentTitle: string | null;
+  opponentId: string | null;
+  opponentName: string;
+  scoreFor: number | null;
+  scoreAgainst: number | null;
+  isWin: boolean;
+  playedAt: string | null;
+}
+
 export interface PlayerDetail extends Player {
+  worldRank: number | null;
+  recentMatches: PlayerRecentMatch[];
   tournamentHistory: Tournament[];
   applications: PlayerApplicationSummary[];
 }

@@ -38,6 +38,28 @@ export class BracketMatchesController {
   }
 
   @UseGuards(RateLimitGuard, JwtAccessGuard, RolesGuard)
+  @Patch(":id/rollback")
+  @Roles(Role.ORGANIZER, Role.ADMIN)
+  @RateLimit({ bucket: "bracket-match-rollback", limit: 20, windowMs: 60_000 })
+  async rollback(@Param() params: BracketMatchIdParamDto, @Req() request: { user: RequestUser }) {
+    const match = await this.bracketMatchesService.rollbackMatch(params.id, request.user);
+    return sendBracketSuccess("Match result rolled back.", match);
+  }
+
+  @UseGuards(RateLimitGuard, JwtAccessGuard, RolesGuard)
+  @Patch(":id/override")
+  @Roles(Role.ORGANIZER, Role.ADMIN)
+  @RateLimit({ bucket: "bracket-match-override", limit: 20, windowMs: 60_000 })
+  async override(
+    @Param() params: BracketMatchIdParamDto,
+    @Req() request: { user: RequestUser },
+    @Body() dto: UpdateBracketResultDto
+  ) {
+    const match = await this.bracketMatchesService.overrideMatchResult(params.id, dto, request.user);
+    return sendBracketSuccess("Match result overridden.", match);
+  }
+
+  @UseGuards(RateLimitGuard, JwtAccessGuard, RolesGuard)
   @Patch(":id/status")
   @Roles(Role.ORGANIZER, Role.ADMIN)
   @RateLimit({ bucket: "bracket-match-status", limit: 30, windowMs: 60_000 })

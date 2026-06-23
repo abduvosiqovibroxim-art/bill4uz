@@ -17,278 +17,323 @@ export const LOCALE_COOKIE = "billard-locale";
 export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
   ru: {
     common: {
-      language: "����",
+      language: "Язык",
       brand: "Billard.uz Pro",
-      platformTag: "����������� ��������� ����������",
-      appDescription: "�������� ��������� ��� ������, ��������, ������� � ��������� �����������.",
-      readMore: "���������",
-      details: "�������",
-      all: "���",
-      noResults: "�� ������� �������� ������ �� �������.",
+      platformTag: "Премиальная турнирная экосистема",
+      appDescription: "Цифровая платформа для клубов, турниров, игроков и рейтингов Узбекистана.",
+      readMore: "Подробнее",
+      details: "Открыть",
+      all: "Все",
+      noResults: "По текущим фильтрам ничего не найдено.",
       stats: {
         elo: "ELO",
-        wins: "������",
-        losses: "���������",
-        winRate: "�������",
-        rating: "�������",
-        tables: "�����",
-        prizePool: "�������� ����",
-        participants: "���������",
-        organizer: "�����������",
-        format: "������",
-        address: "�����",
-        club: "����",
-        date: "����",
-        city: "�����",
-        country: "������",
-        disciplines: "����������",
-        services: "������",
-        workHours: "���� ������"
+        wins: "Победы",
+        losses: "Поражения",
+        winRate: "Процент побед",
+        rating: "Рейтинг",
+        tables: "Столы",
+        prizePool: "Призовой фонд",
+        participants: "Участники",
+        organizer: "Организатор",
+        format: "Формат",
+        address: "Адрес",
+        club: "Клуб",
+        date: "Дата",
+        city: "Город",
+        country: "Страна",
+        disciplines: "Дисциплины",
+        services: "Услуги",
+        workHours: "Часы работы"
       },
       statuses: {
-        upcoming: "�����",
-        live: "���� ������",
-        finished: "��������"
+        upcoming: "Скоро",
+        live: "В эфире",
+        finished: "Завершён"
       },
       categories: {
-        platform: "���������",
-        tournament: "������",
-        product: "�������",
-        media: "�����"
+        platform: "Платформа",
+        tournament: "Турнир",
+        product: "Продукт",
+        media: "Медиа"
       },
       cities: {
-        tashkent: "�������",
-        samarkand: "���������",
-        bukhara: "������",
-        andijan: "�������",
-        namangan: "��������",
-        fergana: "�������",
-        nukus: "�����"
+        tashkent: "Ташкент",
+        samarkand: "Самарканд",
+        bukhara: "Бухара",
+        andijan: "Андижан",
+        namangan: "Наманган",
+        fergana: "Фергана",
+        nukus: "Нукус"
       },
       districts: {
-        mirabad: "����������� �����",
-        registan: "��������",
-        oldTown: "������ �����"
+        mirabad: "Мирабадский район",
+        registan: "Регистан",
+        oldTown: "Старый город"
       },
       countries: {
-        uzbekistan: "����������"
+        uzbekistan: "Узбекистан"
       },
       disciplines: {
-        freePyramid: "��������� ��������",
-        russianPyramid: "������� ��������"
+        freePyramid: "Свободная пирамида",
+        russianPyramid: "Русская пирамида",
+        combinedPyramid: "Комбинированная пирамида",
+        dynamicPyramid: "Динамичная пирамида",
+        moscowPyramid: "Московская пирамида",
+        pool8: "Пул-8",
+        pool9: "Пул-9",
+        pool10: "Пул-10",
+        pool141: "14.1",
+        snooker: "Снукер",
+        chineseBilliards: "Китайский бильярд"
       },
       services: {
-        academy: "��������",
-        vip: "VIP-���",
-        coaching: "������",
-        stream: "��������"
+        academy: "Академия",
+        vip: "VIP-зал",
+        coaching: "Тренер",
+        stream: "Трансляция"
       },
       mediaTypes: {
-        highlights: "��������",
-        report: "��������",
-        interview: "��������"
+        highlights: "Хайлайты",
+        report: "Репортаж",
+        interview: "Интервью"
       },
       localeNames: {
-        ru: "���",
+        ru: "Рус",
         uz: "O'z",
         en: "Eng"
       }
     },
     nav: {
-      home: "�������",
-      tournaments: "�������",
-      players: "������",
-      rankings: "��������",
-      clubs: "�����",
-      news: "�������",
-      media: "�����",
-      about: "� ���������",
-      contacts: "��������",
-      signin: "�����",
-      signup: "�����������"
+      home: "Главная",
+      tournaments: "Турниры",
+      players: "Игроки",
+      coaches: "Тренеры",
+      rankings: "Рейтинги",
+      clubs: "Клубы",
+      news: "Новости",
+      media: "Медиа",
+      about: "О платформе",
+      contacts: "Контакты",
+      signin: "Войти",
+      signup: "Регистрация"
     },
     commonUi: {
-      exploreTournament: "�������� �������",
-      explorePlayer: "������� ������",
-      exploreClub: "������� �����",
-      readArticle: "������ �������",
-      loading: "��������",
-      retry: "���������",
-      backHome: "�� �������"
+      exploreTournament: "Страница турнира",
+      explorePlayer: "Профиль игрока",
+      exploreClub: "Профиль клуба",
+      readArticle: "Читать статью",
+      loading: "Загрузка",
+      retry: "Повторить",
+      backHome: "На главную"
     },
     home: {
-      eyebrow: "���������� ���������� �����������",
-      title: "��������� ��� ��������, ������, ������� � ���������",
-      subtitle: "������ ����� ��� �����������, ����������, �����, ���������� � ���������� ���������� ������ �� ��������� � ��������.",
-      ctaPlayer: "����� �������",
-      ctaClub: "�������� ����",
-      ctaTournament: "������� ������",
-      tournamentsTitle: "��������� �������",
-      tournamentsSubtitle: "���������� ������� �� ������� � ������",
-      playersTitle: "��� �������",
-      playersSubtitle: "���������� ������ �� ELO � ������������ ������",
-      clubsTitle: "���������� �����",
-      clubsSubtitle: "�������� � �������������� ��������������� � ��������� ������",
-      rankingsTitle: "������������ �������",
-      rankingsSubtitle: "������� �������, ������� � ����������� � API � live-�����������",
-      newsTitle: "������� � ����������",
-      newsSubtitle: "����������� ������, ��������� �������� � �������� ������",
+      eyebrow: "Бильярдная экосистема Узбекистана",
+      title: "Платформа для турниров, клубов, игроков и рейтингов",
+      subtitle: "Единая среда для регистрации, статистики, медиа, расписаний и управления на мобильных и десктопе.",
+      ctaPlayer: "Стать игроком",
+      ctaClub: "Добавить клуб",
+      ctaTournament: "Создать турнир",
+      tournamentsTitle: "Ближайшие турниры",
+      tournamentsSubtitle: "Текущие события по городам и клубам",
+      playersTitle: "Топ игроков",
+      playersSubtitle: "Лидеры по ELO и стабильности в сезоне",
+      clubsTitle: "Популярные клубы",
+      clubsSubtitle: "Площадки с подтверждённой инфраструктурой и активным турнирным ритмом",
+      rankingsTitle: "Национальный рейтинг",
+      rankingsSubtitle: "Текущая таблица, готовая к API и live-обновлениям",
+      newsTitle: "Новости и обновления",
+      newsSubtitle: "Релизы продукта, турнирная повестка и ключевые анонсы",
       metrics: {
-        clubs: "������������ �����",
-        players: "������ � �������",
-        tournaments: "������� ������"
+        clubs: "Подключённые клубы",
+        players: "Игроки в системе",
+        tournaments: "Турниры сезона"
       }
     },
     tournaments: {
-      title: "�������",
-      subtitle: "����������, �������, ������� ������� � �������� �������",
-      cityPlaceholder: "��� ������",
-      statusPlaceholder: "��� �������",
-      disciplinePlaceholder: "��� ����������",
-      clubsCount: "������ � ��������",
-      empty: "������� �� ��������� ���������� �� �������.",
+      title: "Турниры",
+      subtitle: "Расписания, статусы, быстрые фильтры и карточки событий",
+      cityPlaceholder: "Все города",
+      statusPlaceholder: "Все статусы",
+      disciplinePlaceholder: "Все дисциплины",
+      clubsCount: "Клубы в каталоге",
+      empty: "Турниры по выбранным фильтрам не найдены.",
       detail: {
-        schedule: "���������� ������",
-        participants: "���������",
-        register: "������ ������",
-        registration: "�����������",
-        venue: "�������"
+        schedule: "Расписание матчей",
+        participants: "Участники",
+        register: "Подать заявку",
+        registration: "Регистрация",
+        venue: "Площадка"
       }
     },
     players: {
-      title: "������",
-      subtitle: "������� ������� � �������, ����������� � �����������",
-      searchPlaceholder: "����� ������",
-      cityPlaceholder: "��� ������",
-      sortByElo: "ELO �� ��������",
-      sortByWins: "������ ����� �����",
-      achievements: "����������",
-      history: "������� ��������",
+      title: "Игроки",
+      subtitle: "Каталог с поиском, сортировкой и статистикой игроков",
+      searchPlaceholder: "Поиск игрока",
+      countryPlaceholder: "Все страны",
+      cityPlaceholder: "Все города",
+      ratingPlaceholder: "Любой уровень",
+      disciplinePlaceholder: "Все дисциплины",
+      clearFilters: "Очистить фильтры",
+      tournamentsPlayed: "Турниры",
+      sortByElo: "ELO по убыванию",
+      sortByWins: "Больше всего побед",
+      achievements: "Достижения",
+      history: "История турниров",
       profile: {
-        bio: "������� ������"
+        bio: "Профиль игрока"
+      }
+    },
+    coaches: {
+      title: "Тренеры",
+      subtitle: "Каталог тренеров с поиском по имени, региону, городу, дисциплине и квалификации",
+      searchPlaceholder: "Поиск по имени",
+      regionPlaceholder: "Все регионы",
+      cityPlaceholder: "Все города",
+      disciplinePlaceholder: "Все дисциплины",
+      qualificationPlaceholder: "Любая квалификация",
+      clearFilters: "Очистить фильтры",
+      specialization: "Специализация",
+      club: "Клуб",
+      students: "Учеников",
+      personalPrice: "Персональная",
+      groupPrice: "Групповая",
+      viewProfile: "Профиль",
+      experience: "Опыт",
+      yearsShort: "лет",
+      about: "О тренере",
+      gallery: "Галерея",
+      reviews: "Отзывы учеников",
+      achievements: "Достижения",
+      studentsList: "Ученики",
+      contacts: "Контакты",
+      qualifications: {
+        instructor: "Инструктор",
+        master: "Мастер спорта",
+        internationalMaster: "Мастер спорта международного класса",
+        honoredCoach: "Заслуженный тренер"
       }
     },
     rankings: {
-      title: "��������",
-      subtitle: "����� �������, ���������� � ������������ �����",
-      disciplinesAll: "����� �������",
-      regionsAll: "��� �������",
-      searchPlaceholder: "����� ������",
-      sortByElo: "���������� �� ELO",
-      sortByWins: "���������� �� �������",
+      title: "Рейтинги",
+      subtitle: "Общая таблица, дисциплины и региональные срезы",
+      disciplinesAll: "Общий рейтинг",
+      regionsAll: "Все регионы",
+      searchPlaceholder: "Найти игрока",
+      sortByElo: "Сортировать по ELO",
+      sortByWins: "Сортировать по победам",
       headers: {
         place: "#",
-        player: "�����",
-        city: "�����",
+        player: "Игрок",
+        city: "Город",
         elo: "ELO",
-        winRate: "�������"
+        winRate: "Процент побед"
       }
     },
     clubs: {
-      title: "�����",
-      subtitle: "����������� ��������, ������� � ����� ��� ������� ����������",
-      cityPlaceholder: "��� ������",
-      servicesPlaceholder: "��� ������",
-      searchPlaceholder: "����� �����",
-      mapTitle: "����� ������",
-      mapSubtitle: "����� ���������� � Leaflet ��� Google Maps �� ����������� ��������",
-      tournaments: "������� �����",
-      reviews: "������� � ������",
+      title: "Клубы",
+      subtitle: "Проверенные площадки, фильтры и профили клубов с поддержкой карты",
+      cityPlaceholder: "Все города",
+      servicesPlaceholder: "Все услуги",
+      searchPlaceholder: "Поиск клуба",
+      mapTitle: "Карта клубов",
+      mapSubtitle: "Точка интеграции с Leaflet или Google Maps по координатам клубов",
+      tournaments: "Турниры клуба",
+      reviews: "Новости и отзывы",
       profile: {
-        description: "� �����"
+        description: "О клубе"
       }
     },
     news: {
-      title: "�������",
-      subtitle: "��������� ��������, ���������� ��������� � ����������� ������",
-      categoryPlaceholder: "��� ���������",
-      searchPlaceholder: "����� ����������",
-      articleBody: "��� �������� ������ ��� ����������� CMS, SEO-���������� � ��������������� �������� �� API."
+      title: "Новости",
+      subtitle: "Освещение турниров, обновления платформы и релизы продукта",
+      categoryPlaceholder: "Все категории",
+      searchPlaceholder: "Поиск статьи",
+      articleBody: "Эта страница готова для интеграции CMS, SEO-метаданных и локализованного контента из API."
     },
     media: {
-      title: "���� � �����",
-      subtitle: "����� ��������, �������� ������� � ����������"
+      title: "Фото и видео",
+      subtitle: "Архив альбомов, хайлайтов матчей и репортажей"
     },
     footer: {
-      tagline: "����������� ��������� ���������� ��� ���������� ����� ����������� � ����������� ������������� �����.",
-      contact: "�������",
+      tagline: "Премиальная турнирная экосистема для бильярдной сцены Узбекистана и будущего регионального роста.",
+      contact: "Контакт",
       telegram: "Telegram",
-      address: "�����",
-      addressValue: "�������, ������������� �����",
-      rights: "Billard.uz Pro. ��� ����� ��������."
+      address: "Адрес",
+      addressValue: "Ташкент, Яккасарайский район",
+      rights: "Billard.uz Pro. Все права защищены."
     },
     forms: {
-      name: "���",
-      phone: "�������",
+      name: "Имя",
+      phone: "Телефон",
       email: "Email",
-      password: "������",
-      request: "��� ������",
-      send: "��������� ������",
-      continue: "����������",
-      createAccount: "������� �������",
-      firstName: "���",
-      lastName: "�������",
-      role: "����",
-      playerRole: "�����",
-      clubRole: "����",
-      organizerRole: "�����������"
+      password: "Пароль",
+      request: "Ваш запрос",
+      send: "Отправить запрос",
+      continue: "Продолжить",
+      createAccount: "Создать аккаунт",
+      firstName: "Имя",
+      lastName: "Фамилия",
+      role: "Роль",
+      playerRole: "Игрок",
+      clubRole: "Клуб",
+      organizerRole: "Организатор"
     },
     auth: {
-      signinTitle: "����",
-      signupTitle: "�����������",
-      signinSubtitle: "���� � ���������� �������� � ������",
-      signupSubtitle: "�������� �������, ����� �����������, ����������� � ��������� ���������"
+      signinTitle: "Вход",
+      signupTitle: "Регистрация",
+      signinSubtitle: "Доступ к турнирной и клубной экосистеме",
+      signupSubtitle: "Создайте профиль, чтобы участвовать, публиковать и управлять событиями"
     },
     about: {
-      title: "� ���������",
-      mission: "������: ������� ���������� � data-driven �������������� ��� ���������� ��������� �����������.",
-      players: "��� �������",
-      clubs: "��� ������",
-      organizers: "��� �������������",
-      playersText: "������ �� �������, ������ ����������, ������� � �����������.",
-      clubsText: "������� ������, �������� ��������, ���������� � ���������� �������.",
-      organizersText: "�������� ��������, �������� �����, ���������� � �����������."
+      title: "О платформе",
+      mission: "Миссия: создать прозрачную, data-driven инфраструктуру для бильярдной индустрии Узбекистана.",
+      players: "Для игроков",
+      clubs: "Для клубов",
+      organizers: "Для организаторов",
+      playersText: "Заявки на турниры, личная статистика, рейтинг и уведомления.",
+      clubsText: "Каталог клубов, страницы площадок, расписания и публикация событий.",
+      organizersText: "Создание турниров, управление сеткой, участники и результаты."
     },
     contacts: {
-      title: "��������",
-      subtitle: "��������� � �������� ��������� �� ��������, ����������� ����� ��� ����������������."
+      title: "Контакты",
+      subtitle: "Свяжитесь с командой по вопросам продукта, подключения клуба или медиапартнёрства."
     },
     dashboard: {
       player: {
-        title: "������� ������",
-        tournaments: "��� �������",
-        elo: "������� ELO",
-        notifications: "�����������",
-        note: "������� ������, ������ �� ������� � ������������ ����������."
+        title: "Кабинет игрока",
+        tournaments: "Мои турниры",
+        elo: "Текущий ELO",
+        notifications: "Уведомления",
+        note: "История матчей, заявки на турниры и личная статистика."
       },
       club: {
-        title: "������� �����",
-        published: "�������������� �������",
-        applications: "�������� ������",
-        completion: "������������� �������",
-        note: "�������� �������� �����, ���������� �����, ����������� � �������� �������."
+        title: "Кабинет клуба",
+        published: "Опубликованные турниры",
+        applications: "Активные заявки",
+        completion: "Заполненность профиля",
+        note: "Редактор страницы клуба, медиа, расписание и управление заявками игроков."
       },
       organizer: {
-        title: "������� ������������",
-        running: "������ �������",
-        brackets: "�������� �����",
-        approvals: "������� �������������",
-        note: "���������� ��������� ������, �������, ������������ � �����������."
+        title: "Кабинет организатора",
+        running: "Текущие турниры",
+        brackets: "Активные сетки",
+        approvals: "Ожидают подтверждения",
+        note: "Управление турнирной сеткой, матчами, результатами и участниками."
       },
       admin: {
-        title: "�����-������",
-        users: "������������",
-        clubs: "�����",
-        tournaments: "�������",
-        reports: "�������",
-        note: "��������� ������, �������, ��������, �������� � ��������� ���������."
+        title: "Админ-панель",
+        users: "Пользователи",
+        clubs: "Клубы",
+        tournaments: "Турниры",
+        reports: "Отчёты",
+        note: "Модерация клубов, игроков, новостей, турниров и аналитика платформы."
       }
     },
     system: {
-      errorTitle: "���-�� ����� �� ���",
-      errorText: "���������� ��� ��� ��� ���������� � ���������, ���� ������ ����������.",
-      notFoundTitle: "�������� �� �������",
-      notFoundText: "����������� ������ ����������� ��� ��� ���������."
+      errorTitle: "Что-то пошло не так",
+      errorText: "Попробуйте ещё раз или обратитесь в поддержку, если ошибка повторяется.",
+      notFoundTitle: "Страница не найдена",
+      notFoundText: "Запрошенный раздел не существует или был перемещён."
     }
   },
   uz: {
@@ -351,7 +396,16 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
       },
       disciplines: {
         freePyramid: "Erkin piramida",
-        russianPyramid: "Rus piramidasi"
+        russianPyramid: "Rus piramidasi",
+        combinedPyramid: "Kombinatsiyalangan piramida",
+        dynamicPyramid: "Dinamik piramida",
+        moscowPyramid: "Moskva piramidasi",
+        pool8: "Pul-8",
+        pool9: "Pul-9",
+        pool10: "Pul-10",
+        pool141: "14.1",
+        snooker: "Snuker",
+        chineseBilliards: "Xitoy bilyardi"
       },
       services: {
         academy: "Akademiya",
@@ -374,6 +428,7 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
       home: "Bosh sahifa",
       tournaments: "Turnirlar",
       players: "O'yinchilar",
+      coaches: "Murabbiylar",
       rankings: "Reytinglar",
       clubs: "Klublar",
       news: "Yangiliklar",
@@ -435,13 +490,48 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
       title: "O'yinchilar",
       subtitle: "Qidiruv, saralash va statistika bilan katalog",
       searchPlaceholder: "O'yinchini qidirish",
+      countryPlaceholder: "Barcha davlatlar",
       cityPlaceholder: "Barcha shaharlar",
+      ratingPlaceholder: "Istalgan daraja",
+      disciplinePlaceholder: "Barcha yo'nalishlar",
+      clearFilters: "Filtrlarni tozalash",
+      tournamentsPlayed: "Turnirlar",
       sortByElo: "ELO bo'yicha kamayish",
       sortByWins: "Eng ko'p g'alaba",
       achievements: "Yutuqlar",
       history: "Turnirlar tarixi",
       profile: {
         bio: "O'yinchi profili"
+      }
+    },
+    coaches: {
+      title: "Murabbiylar",
+      subtitle: "Ism, hudud, shahar, yo'nalish va malaka bo'yicha murabbiylar katalogi",
+      searchPlaceholder: "Ism bo'yicha qidirish",
+      regionPlaceholder: "Barcha hududlar",
+      cityPlaceholder: "Barcha shaharlar",
+      disciplinePlaceholder: "Barcha yo'nalishlar",
+      qualificationPlaceholder: "Istalgan malaka",
+      clearFilters: "Filtrlarni tozalash",
+      specialization: "Mutaxassisligi",
+      club: "Klub",
+      students: "Shogirdlar",
+      personalPrice: "Shaxsiy",
+      groupPrice: "Guruhli",
+      viewProfile: "Profil",
+      experience: "Tajriba",
+      yearsShort: "yil",
+      about: "Murabbiy haqida",
+      gallery: "Galereya",
+      reviews: "Shogirdlar fikrlari",
+      achievements: "Yutuqlar",
+      studentsList: "Shogirdlar",
+      contacts: "Kontaktlar",
+      qualifications: {
+        instructor: "Instruktor",
+        master: "Sport ustasi",
+        internationalMaster: "Xalqaro toifa sport ustasi",
+        honoredCoach: "Xizmat ko'rsatgan murabbiy"
       }
     },
     rankings: {
@@ -627,7 +717,16 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
       },
       disciplines: {
         freePyramid: "Free pyramid",
-        russianPyramid: "Russian pyramid"
+        russianPyramid: "Russian pyramid",
+        combinedPyramid: "Combined pyramid",
+        dynamicPyramid: "Dynamic pyramid",
+        moscowPyramid: "Moscow pyramid",
+        pool8: "Pool-8",
+        pool9: "Pool-9",
+        pool10: "Pool-10",
+        pool141: "14.1",
+        snooker: "Snooker",
+        chineseBilliards: "Chinese billiards"
       },
       services: {
         academy: "Academy",
@@ -650,6 +749,7 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
       home: "Home",
       tournaments: "Tournaments",
       players: "Players",
+      coaches: "Coaches",
       rankings: "Rankings",
       clubs: "Clubs",
       news: "News",
@@ -711,13 +811,48 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
       title: "Players",
       subtitle: "Directory with search, sorting, and player statistics",
       searchPlaceholder: "Search player",
+      countryPlaceholder: "All countries",
       cityPlaceholder: "All cities",
+      ratingPlaceholder: "Any level",
+      disciplinePlaceholder: "All disciplines",
+      clearFilters: "Clear filters",
+      tournamentsPlayed: "Tournaments",
       sortByElo: "ELO descending",
       sortByWins: "Most wins",
       achievements: "Achievements",
       history: "Tournament history",
       profile: {
         bio: "Player profile"
+      }
+    },
+    coaches: {
+      title: "Coaches",
+      subtitle: "Coaches directory with search by name, region, city, discipline, and qualification",
+      searchPlaceholder: "Search by name",
+      regionPlaceholder: "All regions",
+      cityPlaceholder: "All cities",
+      disciplinePlaceholder: "All disciplines",
+      qualificationPlaceholder: "Any qualification",
+      clearFilters: "Clear filters",
+      specialization: "Specialization",
+      club: "Club",
+      students: "Students",
+      personalPrice: "Personal",
+      groupPrice: "Group",
+      viewProfile: "Profile",
+      experience: "Experience",
+      yearsShort: "yrs",
+      about: "About the coach",
+      gallery: "Gallery",
+      reviews: "Student reviews",
+      achievements: "Achievements",
+      studentsList: "Students",
+      contacts: "Contacts",
+      qualifications: {
+        instructor: "Instructor",
+        master: "Master of Sport",
+        internationalMaster: "International Master of Sport",
+        honoredCoach: "Honored Coach"
       }
     },
     rankings: {

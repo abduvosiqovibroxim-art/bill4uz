@@ -35,6 +35,11 @@ export function BracketRound({
     <section className="bracket-round" style={roundStyle}>
       <div className="bracket-round-head">
         <h3 className="text-sm font-semibold text-white">{toCompactRoundTitle(round, locale, text(round.label))}</h3>
+        {round.placeRange ? (
+          <span className="text-[0.7rem] font-semibold uppercase tracking-wide" style={{ color: "var(--color-accent)" }}>
+            {locale === "ru" ? "Места" : locale === "uz" ? "O'rinlar" : "Places"} {round.placeRange}
+          </span>
+        ) : null}
       </div>
 
       <div className="bracket-round-content">
@@ -56,7 +61,7 @@ export function BracketRound({
               {!isFirstRound ? <span className="bracket-connector bracket-connector-left-h" aria-hidden="true" /> : null}
               {!isFirstRound ? <span className="bracket-connector bracket-connector-left-v" aria-hidden="true" /> : null}
               {!isLastRound ? <span className="bracket-connector bracket-connector-right-h" aria-hidden="true" /> : null}
-              <MatchCard match={match} onSelect={onMatchSelect} isSelected={selectedMatchId === match.id} />
+              <MatchCard match={match} onSelect={onMatchSelect} isSelected={selectedMatchId === match.id} placeRange={round.placeRange} />
             </div>
           );
         })}
@@ -83,6 +88,19 @@ function toCompactRoundTitle(
   locale: "ru" | "uz" | "en",
   fallback: string
 ) {
+  const roundWord = locale === "ru" ? "Раунд" : locale === "uz" ? "Raund" : "Round";
+
+  // Lower bracket: never use single-elimination "semifinal/final" heuristics — those
+  // depend on match counts and mislabel losers-bracket rounds. Number them plainly.
+  if (round.phase === "lower") {
+    return `${roundWord} ${round.roundNumber}`;
+  }
+
+  // Finals section groups the grand final, reset and 3rd-place match together.
+  if (round.phase === "final") {
+    return locale === "ru" ? "Финал" : "Final";
+  }
+
   const normalized = fallback.trim().toLowerCase();
 
   if (/^\d+\s*\/\s*\d+$/.test(normalized)) {

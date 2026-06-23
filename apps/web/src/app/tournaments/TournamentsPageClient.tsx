@@ -1,17 +1,36 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ErrorState, LoadingState } from "@/components/DataState";
+import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
+import { TournamentCard } from "@/components/cards";
+import { useAuth } from "@/components/AuthProvider";
 import { useTournamentsQuery } from "@/lib/api/hooks";
 import { useI18n } from "@/lib/i18n";
-import { getTournamentParticipantsProgress } from "@/lib/tournamentParticipants";
-import type { Tournament } from "@/lib/types";
+import type { BilliardKindKey, Tournament } from "@/lib/types";
+
+const KIND_LABELS: Record<BilliardKindKey, { ru: string; uz: string; en: string }> = {
+  pyramid: { ru: "Пирамида", uz: "Piramida", en: "Pyramid" },
+  pool: { ru: "Пул", uz: "Pul", en: "Pool" },
+  snooker: { ru: "Снукер", uz: "Snuker", en: "Snooker" }
+};
+
+function normalizeKind(value?: string | null): BilliardKindKey | null {
+  const normalized = value?.toLowerCase();
+  return normalized === "pyramid" || normalized === "pool" || normalized === "snooker" ? normalized : null;
+}
 
 type TournamentsCopy = {
   title: string;
+  subtitle: string;
+  eyebrow: string;
+  createTournament: string;
+  found: string;
   empty: string;
+  emptySub: string;
   noResult: string;
+  noResultSub: string;
   open: string;
   date: string;
   city: string;
@@ -20,6 +39,7 @@ type TournamentsCopy = {
   status: string;
   participants: string;
   bracketFormat: string;
+  filters: string;
   allCities: string;
   allDisciplines: string;
   allCategories: string;
@@ -38,8 +58,14 @@ type TournamentsCopy = {
 const copy: Record<"ru" | "uz" | "en", TournamentsCopy> = {
   ru: {
     title: "Турниры",
-    empty: "Нет турниров",
-    noResult: "Нет турниров",
+    subtitle: "Все турниры платформы: статусы, сетки, участники и результаты в одном разделе.",
+    eyebrow: "События",
+    createTournament: "Создать турнир",
+    found: "найдено",
+    empty: "Турниры пока не добавлены",
+    emptySub: "Организаторы скоро добавят новые события — загляни позже.",
+    noResult: "Ничего не найдено",
+    noResultSub: "Попробуйте изменить фильтры.",
     open: "Открыть",
     date: "Дата",
     city: "Город",
@@ -48,6 +74,7 @@ const copy: Record<"ru" | "uz" | "en", TournamentsCopy> = {
     status: "Статус",
     participants: "Участники",
     bracketFormat: "Формат сетки",
+    filters: "Фильтры",
     allCities: "Все города",
     allDisciplines: "Все дисциплины",
     allCategories: "Все категории",
@@ -64,8 +91,14 @@ const copy: Record<"ru" | "uz" | "en", TournamentsCopy> = {
   },
   uz: {
     title: "Turnirlar",
-    empty: "Turnirlar yo'q",
-    noResult: "Turnirlar yo'q",
+    subtitle: "Platformaning barcha turnirlari: holatlar, setkalar, ishtirokchilar va natijalar bitta bo'limda.",
+    eyebrow: "Tadbirlar",
+    createTournament: "Turnir yaratish",
+    found: "topildi",
+    empty: "Turnirlar hali qo'shilmagan",
+    emptySub: "Tashkilotchilar tez orada yangi tadbirlar qo'shadi.",
+    noResult: "Hech narsa topilmadi",
+    noResultSub: "Filtrlarni o'zgartirib ko'ring.",
     open: "Ochish",
     date: "Sana",
     city: "Shahar",
@@ -86,12 +119,19 @@ const copy: Record<"ru" | "uz" | "en", TournamentsCopy> = {
     missingDate: "Sana ko'rsatilmagan",
     missingDiscipline: "Ko'rsatilmagan",
     missingCity: "Shahar ko'rsatilmagan",
+    filters: "Filtrlar",
     loadError: "Turnirlarni yuklab bo'lmadi"
   },
   en: {
     title: "Tournaments",
-    empty: "No tournaments",
-    noResult: "No tournaments",
+    subtitle: "Every tournament on the platform: statuses, brackets, participants and results in one place.",
+    eyebrow: "Events",
+    createTournament: "Create tournament",
+    found: "found",
+    empty: "No tournaments yet",
+    emptySub: "Organizers will add new events soon — check back later.",
+    noResult: "Nothing found",
+    noResultSub: "Try adjusting the filters.",
     open: "Open",
     date: "Date",
     city: "City",
@@ -100,6 +140,7 @@ const copy: Record<"ru" | "uz" | "en", TournamentsCopy> = {
     status: "Status",
     participants: "Participants",
     bracketFormat: "Bracket format",
+    filters: "Filters",
     allCities: "All cities",
     allDisciplines: "All disciplines",
     allCategories: "All categories",
@@ -117,9 +158,13 @@ const copy: Record<"ru" | "uz" | "en", TournamentsCopy> = {
 };
 
 export function TournamentsPageClient() {
-  const { locale, text, t } = useI18n();
+  const { locale, t, formatNumber } = useI18n();
   const c = copy[locale];
+  const { user } = useAuth();
+  const canCreate = user?.role === "ORGANIZER" || user?.role === "ADMIN";
   const tournamentsQuery = useTournamentsQuery();
+  const searchParams = useSearchParams();
+  const [kindFilter, setKindFilter] = useState<BilliardKindKey | null>(() => normalizeKind(searchParams.get("kind")));
   const [cityFilter, setCityFilter] = useState("all");
   const [disciplineFilter, setDisciplineFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -146,6 +191,7 @@ export function TournamentsPageClient() {
   const formats = Array.from(new Set(tournaments.map((item) => item.bracketSystem).filter(Boolean))).sort((a, b) => a.localeCompare(b));
 
   const filtered = tournaments.filter((item) => {
+    const kindMatch = !kindFilter ? true : item.billiardKind === kindFilter;
     const cityMatch = cityFilter === "all" ? true : item.cityKey === cityFilter;
     const disciplineMatch = disciplineFilter === "all" ? true : disciplineName(item, c) === disciplineFilter;
     const categoryMatch = categoryFilter === "all" ? true : item.category === categoryFilter;
@@ -153,22 +199,37 @@ export function TournamentsPageClient() {
     const dateMatch = dateFilter === "all" ? true : matchesDateFilter(item.startsAt, dateFilter);
     const formatMatch = formatFilter === "all" ? true : item.bracketSystem === formatFilter;
 
-    return cityMatch && disciplineMatch && categoryMatch && statusMatch && dateMatch && formatMatch;
+    return kindMatch && cityMatch && disciplineMatch && categoryMatch && statusMatch && dateMatch && formatMatch;
   });
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
-      {/* Header */}
-      <section className="container-shell py-12">
-        <h1 className="text-5xl md:text-6xl font-black mb-4 leading-tight" style={{ color: "var(--text)" }}>{c.title}</h1>
-        <p className="text-xl" style={{ color: "var(--muted)" }}>
-          {locale === "ru" ? "Все турниры на одной платформе" : locale === "uz" ? "Barcha turnirlar bir platformada" : "All tournaments in one place"}
-        </p>
+    <div className="portal-wrap">
+      <div className="portal">
+      {/* Compact hero */}
+      <section className="portal-hero portal-hero-solo" style={{ padding: "clamp(1.2rem, 3vw, 2rem)" }}>
+        <div className="portal-hero-copy">
+          <span className="portal-eyebrow">{c.eyebrow}</span>
+          <h1 className="portal-hero-title" style={{ fontSize: "clamp(1.8rem, 1.2rem + 2.4vw, 2.6rem)" }}>{c.title}</h1>
+          <p className="portal-hero-lead">{c.subtitle}</p>
+          <div className="portal-hero-chips">
+            <span className="portal-chip"><span className="tick" aria-hidden="true">●</span>{formatNumber(filtered.length)} {c.found}</span>
+            {kindFilter ? (
+              <button type="button" className="portal-chip" onClick={() => setKindFilter(null)} style={{ cursor: "pointer" }}>
+                {KIND_LABELS[kindFilter][locale]} ✕
+              </button>
+            ) : null}
+          </div>
+          {canCreate ? (
+            <div className="portal-hero-actions">
+              <Link href="/dashboard/organizer" className="button-primary">{c.createTournament}</Link>
+            </div>
+          ) : null}
+        </div>
       </section>
 
       {/* Filters */}
-      <section className="container-shell pb-6">
-        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-3 p-8 rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-soft)" }}>
+      <section>
+        <div className="portal-panel grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <label className="space-y-1">
             <span className="text-xs font-semibold uppercase" style={{ color: "var(--muted)" }}>{c.city}</span>
             <select className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: "var(--surface-strong)", border: "1px solid var(--card-border)", color: "var(--text)" }} value={cityFilter} onChange={(event) => setCityFilter(event.target.value)}>
@@ -241,99 +302,28 @@ export function TournamentsPageClient() {
         </div>
       </section>
 
-      {/* Empty states */}
+      {/* Content */}
       {tournaments.length === 0 ? (
-        <section className="container-shell py-12">
-          <div className="text-center p-12 rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-soft)" }}>
-            <p className="text-lg font-semibold" style={{ color: "var(--muted)" }}>{c.empty}</p>
-          </div>
-        </section>
-      ) : null}
-
-      {tournaments.length > 0 && filtered.length === 0 ? (
-        <section className="container-shell py-12">
-          <div className="text-center p-12 rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-soft)" }}>
-            <p className="text-lg font-semibold" style={{ color: "var(--muted)" }}>{c.noResult}</p>
-          </div>
-        </section>
-      ) : null}
-
-      {/* Tournament Cards */}
-      {filtered.length > 0 ? (
-        <section className="container-shell pb-12">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <EmptyState
+          icon="▦"
+          title={c.empty}
+          description={c.emptySub}
+          action={canCreate ? <Link href="/dashboard/organizer" className="button-primary">{c.createTournament}</Link> : undefined}
+        />
+      ) : filtered.length === 0 ? (
+        <EmptyState icon="⊘" title={c.noResult} description={c.noResultSub} />
+      ) : (
+        <section>
+          <div className="portal-info-grid">
             {filtered.map((tournament) => (
-              <article key={tournament.id} className="p-8 rounded-xl transition-all hover:scale-[1.02]" style={{ background: "var(--surface)", border: "1px solid var(--card-border)", boxShadow: "var(--shadow-soft)" }}>
-                {/* Status badge */}
-                <div className="flex items-center justify-between mb-4">
-                  <span className="px-3 py-1.5 text-xs font-black uppercase rounded-lg" style={{ background: "var(--emerald)", color: "var(--bg)" }}>
-                    {statusLabel(tournament.status, t)}
-                  </span>
-                  <span className="text-sm font-bold" style={{ color: "var(--accent)" }}>
-                    {participantsText(tournament)}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h2 className="text-2xl font-black mb-4 leading-tight" style={{ color: "var(--text)" }}>{text(tournament.title) || "-"}</h2>
-
-                {/* Meta info */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium" style={{ color: "var(--muted)" }}>{c.date}:</span>
-                    <span className="font-semibold" style={{ color: "var(--text)" }}>{formatTournamentDate(tournament.startsAt, locale, c.missingDate)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium" style={{ color: "var(--muted)" }}>{c.city}:</span>
-                    <span className="font-semibold" style={{ color: "var(--text)" }}>{cityLabel(tournament.cityKey, t, c)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium" style={{ color: "var(--muted)" }}>{c.discipline}:</span>
-                    <span className="font-semibold" style={{ color: "var(--text)" }}>{disciplineName(tournament, c)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium" style={{ color: "var(--muted)" }}>{c.category}:</span>
-                    <span className="font-semibold" style={{ color: "var(--text)" }}>{categoryLabel(tournament.category, locale)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium" style={{ color: "var(--muted)" }}>{c.bracketFormat}:</span>
-                    <span className="font-semibold" style={{ color: "var(--text)" }}>{formatLabel(tournament.bracketSystem, t)}</span>
-                  </div>
-                </div>
-
-                {/* CTA button */}
-                {tournament.id ? (
-                  <Link href={`/tournaments/${tournament.id}`} className="block w-full px-5 py-3 text-center font-bold rounded-lg transition-all hover:scale-105" style={{ background: "var(--accent)", color: "var(--bg)" }}>
-                    {c.open} →
-                  </Link>
-                ) : null}
-              </article>
+              <TournamentCard key={tournament.id} item={tournament} />
             ))}
           </div>
         </section>
-      ) : null}
+      )}
+      </div>
     </div>
   );
-}
-
-function formatTournamentDate(value: string, locale: "ru" | "uz" | "en", fallback: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return fallback;
-  }
-
-  return date.toLocaleString(locale === "en" ? "en-US" : "ru-RU", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
-function participantsText(tournament: Tournament) {
-  const progress = getTournamentParticipantsProgress(tournament);
-  return progress.capacity ? `${progress.registered} / ${progress.capacity}` : String(progress.registered);
 }
 
 function statusLabel(status: string, t: (path: string) => string) {

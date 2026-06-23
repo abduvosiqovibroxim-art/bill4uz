@@ -25,6 +25,7 @@ import { PrismaService } from "../common/prisma.service";
 import { hashToken } from "../common/token";
 import { ApplicationsService } from "../applications/applications.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { BracketMatchesService } from "../brackets/bracket-matches.service";
 import {
   ConsumeTelegramLinkDto,
   CreateTelegramGroupMatchDto,
@@ -45,7 +46,8 @@ export class BotService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly applicationsService: ApplicationsService,
-    private readonly notificationsService: NotificationsService
+    private readonly notificationsService: NotificationsService,
+    private readonly bracketMatchesService: BracketMatchesService
   ) {
     this.botUsername = this.configService.get<string>("TELEGRAM_BOT_USERNAME", "").replace(/^@/, "").trim();
     this.appUrl = this.configService.get<string>("APP_URL", "http://localhost:3000").replace(/\/$/, "");
@@ -925,6 +927,69 @@ export class BotService {
     }
 
     return user;
+  }
+
+  async getReportableMatches(tournamentId: string, telegramId: string) {
+    const user = await this.requireRole(telegramId, [Role.ORGANIZER, Role.ADMIN]);
+    const tournament = await this.prisma.tournament.findUnique({
+      where: { id: tournamentId },
+      select: { id: true, title: true, organizerId: true }
+    });
+    if (!tournament) {
+      throw new NotFoundException("Tournament not found");
+    }
+    if (user.role !== Role.ADMIN && tournament.organizerId !== user.id) {
+      throw new ForbiddenException("Only the tournament organizer can report results.");
+    }
+
+    const matches = await this.prisma.bracketMatch.findMany({
+      where: {
+        tournamentId,
+        status: { in: ["READY", "LIVE"] },
+        player1Id: { not: null },
+        player2Id: { not: null }
+      },
+      select: {
+        id: true,
+        round: true,
+        matchNumber: true,
+        player1: { select: { id: true, name: true } },
+        player2: { select: { id: true, name: true } }
+      },
+      orderBy: [{ round: "asc" }, { matchNumber: "asc" }]
+    });
+
+    return {
+      tournamentId,
+      title: tournament.title,
+      matches: matches
+        .filter((match) => match.player1 && match.player2)
+        .map((match) => ({
+          matchId: match.id,
+          round: match.round,
+          matchNumber: match.matchNumber,
+          playerA: { participantId: match.player1!.id, name: match.player1!.name },
+          playerB: { participantId: match.player2!.id, name: match.player2!.name }
+        }))
+    };
+  }
+
+  async reportMatchResult(
+    matchId: string,
+    telegramId: string,
+    input: { winnerParticipantId: string; player1Score?: number; player2Score?: number }
+  ) {
+    const user = await this.requireRole(telegramId, [Role.ORGANIZER, Role.ADMIN]);
+    // updateMatchResult re-checks that this organizer actually owns the match's tournament.
+    return this.bracketMatchesService.updateMatchResult(
+      matchId,
+      {
+        winnerId: input.winnerParticipantId,
+        player1Score: input.player1Score,
+        player2Score: input.player2Score
+      },
+      this.toActor(user)
+    );
   }
 
   private toActor(user: User): RequestUser {

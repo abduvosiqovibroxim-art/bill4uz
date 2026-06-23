@@ -8,6 +8,8 @@ import { ParticipantsTable } from "@/components/tournament/ParticipantsTable";
 import { ResultsTable } from "@/components/tournament/ResultsTable";
 import { ScheduleTable } from "@/components/tournament/ScheduleTable";
 import { TournamentBracket } from "@/components/tournament/TournamentBracket";
+import { StandingsTable } from "@/components/tournament/StandingsTable";
+import { GroupPlayoffView } from "@/components/tournament/GroupPlayoffView";
 import { useCreateTournamentApplicationMutation, useMyTournamentApplicationQuery, usePlayersQuery, useTournamentQuery } from "@/lib/api/hooks";
 import { getUserFacingApiError } from "@/lib/api/errors";
 import { useI18n } from "@/lib/i18n";
@@ -33,6 +35,14 @@ export function TournamentDetailPageClient({ id }: { id: string }) {
     authStatus === "authenticated" && user?.role === "PLAYER"
       ? (playersQuery.data ?? []).find((player) => player.userId === user.id) ?? null
       : null;
+
+  // Hooks must run unconditionally before any early return (React rules of hooks).
+  const hasRegulation = tournamentQuery.data ? Boolean(localizedRegulation(tournamentQuery.data, locale)) : false;
+  useEffect(() => {
+    if (activeTab === "regulation" && !hasRegulation) {
+      setActiveTab("grid");
+    }
+  }, [activeTab, hasRegulation]);
 
   if (tournamentQuery.isPending) {
     return (
@@ -72,12 +82,6 @@ export function TournamentDetailPageClient({ id }: { id: string }) {
   const applicationStatus =
     mutationApplicationStatus ??
     (isAutoJoinTournament(tournament) && storedApplicationStatus === "PENDING" ? null : storedApplicationStatus);
-
-  useEffect(() => {
-    if (activeTab === "regulation" && !regulation) {
-      setActiveTab("grid");
-    }
-  }, [activeTab, regulation]);
 
   return (
     <div className="space-y-6 pb-12 tournament-detail-page">
@@ -163,8 +167,12 @@ export function TournamentDetailPageClient({ id }: { id: string }) {
       {activeTab === "grid" ? (
         <div className="tournament-grid-fullwidth">
           <SectionShell>
-            {tournament.bracketSystem === "singleElimination" ? (
+            {tournament.bracketSystem === "singleElimination" || tournament.bracketSystem === "doubleElimination" ? (
               <TournamentBracket rounds={tournament.rounds} />
+            ) : tournament.bracketSystem === "roundRobin" || tournament.bracketSystem === "swiss" ? (
+              <StandingsTable tournamentId={id} />
+            ) : tournament.bracketSystem === "groupPlayoff" ? (
+              <GroupPlayoffView tournament={tournament} />
             ) : (
               <EmptyState message={unsupportedFormatMessage(locale)} />
             )}

@@ -52,6 +52,11 @@ export const queryKeys = {
     list: () => [...queryKeys.players.all, "list"] as const,
     detail: (id: string) => [...queryKeys.players.all, "detail", id] as const
   },
+  coaches: {
+    all: ["coaches"] as const,
+    list: () => [...queryKeys.coaches.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.coaches.all, "detail", id] as const
+  },
   users: {
     all: ["users"] as const,
     list: () => [...queryKeys.users.all, "list"] as const
@@ -76,7 +81,9 @@ export const queryKeys = {
     all: ["brackets"] as const,
     participants: (tournamentId: string) => [...queryKeys.brackets.all, "participants", tournamentId] as const,
     matches: (tournamentId: string) => [...queryKeys.brackets.all, "matches", tournamentId] as const,
-    champion: (tournamentId: string) => [...queryKeys.brackets.all, "champion", tournamentId] as const
+    champion: (tournamentId: string) => [...queryKeys.brackets.all, "champion", tournamentId] as const,
+    standings: (tournamentId: string) => [...queryKeys.brackets.all, "standings", tournamentId] as const,
+    disputes: (tournamentId: string) => [...queryKeys.brackets.all, "disputes", tournamentId] as const
   },
   applications: {
     all: ["applications"] as const,

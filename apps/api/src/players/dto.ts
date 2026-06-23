@@ -12,6 +12,7 @@ export interface PlayerComputedFields {
   nextLevelLabel: LocalizedTextDto | null;
   pointsToNextLevel: number;
   winPercentage: number;
+  disciplines: string[];
 }
 
 export interface PlayerLocalizedFields {
@@ -38,6 +39,20 @@ export interface PlayerTournamentHistoryItemDto {
   schedule: string[] | null;
 }
 
+export interface PlayerRecentMatchDto {
+  id: string;
+  tournamentId: string;
+  tournamentTitle: string | null;
+  opponentId: string | null;
+  opponentName: string;
+  scoreFor: number | null;
+  scoreAgainst: number | null;
+  isWin: boolean;
+  playedAt: Date | null;
+}
+
 export interface PlayerDetailComputedFields extends PlayerComputedFields {
   tournamentHistory: PlayerTournamentHistoryItemDto[];
+  worldRank: number | null;
+  recentMatches: PlayerRecentMatchDto[];
 }

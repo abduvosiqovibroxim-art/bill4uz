@@ -646,6 +646,23 @@ export function buildDoubleEliminationBlueprints(
   lb[lbRoundCount - 1][0].nextMatchId = grandFinal.id;
   lb[lbRoundCount - 1][0].nextSlot = BracketNextSlots.PLAYER2;
 
+  // --- Grand final reset (second decisive final) ---
+  // Played only when the lower-bracket player wins the grand final; the progression
+  // engine fills its players on demand, so it carries no incoming links here.
+  const grandFinalReset = make(lbRoundCount + 2, BracketMatchPhases.FINAL, 7);
+  grandFinalReset.isFinalReset = true;
+
+  // --- 3rd place (bronze) match ---
+  // Losers of the last two losers-bracket rounds (LB final + LB semifinal) play for 3rd.
+  const bronzeMatch = make(lbRoundCount + 1, BracketMatchPhases.FINAL, 5);
+  bronzeMatch.isThirdPlace = true;
+  const lbFinalMatch = lb[lbRoundCount - 1][0];
+  const lbSemifinalMatch = lb[lbRoundCount - 2][0];
+  lbFinalMatch.loserNextMatchId = bronzeMatch.id;
+  lbFinalMatch.loserNextSlot = BracketNextSlots.PLAYER1;
+  lbSemifinalMatch.loserNextMatchId = bronzeMatch.id;
+  lbSemifinalMatch.loserNextSlot = BracketNextSlots.PLAYER2;
+
   // --- Drop WB losers into the losers bracket ---
   // WB round 1 losers: two per LB round 1 match.
   wb[0].forEach((match, matchIndex) => {
@@ -677,7 +694,7 @@ export function buildDoubleEliminationBlueprints(
   });
 
   // --- Scheduling: WB by round, LB staggered after, GF last ---
-  const all = [...wb.flat(), ...lb.flat(), grandFinal];
+  const all = [...wb.flat(), ...lb.flat(), bronzeMatch, grandFinal, grandFinalReset];
   const tableCount = Math.max(options.tableCount, 1);
   let placed = 0;
   for (const match of all) {
@@ -688,6 +705,34 @@ export function buildDoubleEliminationBlueprints(
   }
 
   return all;
+}
+
+/** Total losers-bracket rounds for a double elimination bracket of the given size. */
+export function getLowerRoundCount(bracketSize: number): number {
+  return 2 * (getRoundCount(bracketSize) - 1);
+}
+
+/**
+ * Human place range a given (1-based) losers-bracket round decides, e.g. "25-32".
+ * Earlier rounds eliminate more players and therefore the worst places; the last two
+ * rounds both feed the 3rd-place match, so they are labelled "3-4".
+ */
+export function lowerRoundPlaceRange(bracketSize: number, lowerRound: number): string | null {
+  const lbRoundCount = getLowerRoundCount(bracketSize);
+  if (lowerRound < 1 || lowerRound > lbRoundCount) {
+    return null;
+  }
+  if (lowerRound >= lbRoundCount - 1) {
+    return "3-4";
+  }
+  let below = 0;
+  for (let round = 1; round < lowerRound; round += 1) {
+    below += losersRoundMatchCount(bracketSize, round);
+  }
+  const here = losersRoundMatchCount(bracketSize, lowerRound);
+  const high = bracketSize - below;
+  const low = high - here + 1;
+  return low === high ? `${low}` : `${low}-${high}`;
 }
 
 /** Match count for a 1-based losers-bracket round of a double elimination bracket. */

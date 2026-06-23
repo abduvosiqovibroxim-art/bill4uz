@@ -47,6 +47,7 @@ export interface BracketMatchBlueprint {
   bestOf: number;
   isBye: boolean;
   isThirdPlace: boolean;
+  isFinalReset?: boolean;
   groupIndex: number | null;
   nextMatchId: string | null;
   nextSlot: BracketNextSlotValue | null;

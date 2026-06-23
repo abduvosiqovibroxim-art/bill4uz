@@ -82,9 +82,12 @@ export default function SignInPage() {
     <div className="auth-screen">
       <div className="auth-card">
         <div className="mb-6 space-y-3 text-center">
-          <div className="eyebrow">Billard.uz</div>
-          <h1 className="text-3xl font-semibold text-white">{t("auth.signinTitle")}</h1>
-          <p className="text-sm text-muted">{t("auth.signinSubtitle")}</p>
+          <div className="auth-brand">
+            <span className="auth-brand-badge" aria-hidden="true">B</span>
+            <span className="auth-brand-word">Billuz</span>
+          </div>
+          <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text, var(--text))" }}>{t("auth.signinTitle")}</h1>
+          <p className="text-sm" style={{ color: "var(--color-muted, var(--muted))" }}>{t("auth.signinSubtitle")}</p>
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>

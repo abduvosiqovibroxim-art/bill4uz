@@ -56,6 +56,7 @@ import {
   labelForTournamentLevel,
   labelForTournamentType
 } from "./taxonomy";
+import { lowerRoundPlaceRange } from "../brackets/bracket.utils";
 
 const cityKeyMap: Record<string, string> = {
   tashkent: "tashkent",
@@ -507,7 +508,7 @@ export class TournamentsService {
     }
 
     const matches = this.buildBracketMatches(tournament, participantSeedMap);
-    const rounds = this.buildBracketRounds(matches);
+    const rounds = this.buildBracketRounds(matches, tournament.bracketSize ?? 0);
     const results = this.buildResults(bracketParticipants, fallbackPlayers, matches);
     const placements = new Map(results.map((result) => [result.player.id, result.placement]));
     const eliminatedIds = new Set(
@@ -550,9 +551,11 @@ export class TournamentsService {
     tournament: TournamentDetailRecord,
     participantSeedMap: Map<string, number>
   ): TournamentBracketMatchDto[] {
+    const matchNumberById = new Map(tournament.bracketMatches.map((match) => [match.id, match.matchNumber]));
     return tournament.bracketMatches.map((match) => {
       const phase = this.toMatchPhase(match.phase);
       const roundNumber = phase === "final" ? 1 : match.round;
+      const loserTargetNumber = match.loserNextMatchId ? matchNumberById.get(match.loserNextMatchId) ?? null : null;
 
       return {
         id: match.id,
@@ -573,12 +576,18 @@ export class TournamentsService {
         },
         winnerId: match.winner?.playerId ?? match.winnerId ?? null,
         winnerTo: match.nextMatch ? String(match.nextMatch.matchNumber) : null,
-        loserTo: null
+        loserTo: loserTargetNumber ? String(loserTargetNumber) : null,
+        isThirdPlace: match.isThirdPlace,
+        isFinalReset: match.isFinalReset,
+        groupIndex: match.groupIndex ?? null
       };
     });
   }
 
-  private buildBracketRounds(matches: TournamentBracketMatchDto[]): TournamentBracketRoundDto[] {
+  private buildBracketRounds(
+    matches: TournamentBracketMatchDto[],
+    bracketSize: number
+  ): TournamentBracketRoundDto[] {
     if (matches.length === 0) {
       return [];
     }
@@ -602,6 +611,9 @@ export class TournamentsService {
         label: this.roundLabel(match.phase, match.roundNumber, maxUpperRound),
         phase: match.phase,
         roundNumber: match.roundNumber,
+        // Lower-bracket rounds advertise the final place range they decide (e.g. "25-32").
+        placeRange:
+          match.phase === "lower" && bracketSize > 0 ? lowerRoundPlaceRange(bracketSize, match.roundNumber) : null,
         matches: [match]
       });
     }
@@ -636,65 +648,98 @@ export class TournamentsService {
 
     const results: TournamentResultDto[] = [];
     const placedIds = new Set<string>();
-    const finalMatch = matches.find((match) => match.phase === "final") ?? matches[matches.length - 1];
-    const finalFinished = finalMatch?.status === "finished" && Boolean(finalMatch.winnerId);
 
-    if (finalFinished && finalMatch.winnerId) {
-      const winner = playersById.get(finalMatch.winnerId);
-      if (winner) {
-        results.push({ placement: 1, label: "winner", player: winner, rating: 0 });
-        placedIds.add(winner.id);
+    const pushPlace = (
+      playerId: string | null | undefined,
+      placement: number,
+      placeLabel: string,
+      label: string
+    ) => {
+      if (!playerId || placedIds.has(playerId)) {
+        return;
       }
+      const player = playersById.get(playerId);
+      if (!player) {
+        return;
+      }
+      results.push({ placement, placeLabel, label, player, rating: 0 });
+      placedIds.add(playerId);
+    };
 
-      const runnerUpId = [finalMatch.playerA?.id, finalMatch.playerB?.id].find(
-        (playerId) => Boolean(playerId) && playerId !== finalMatch.winnerId
-      );
-      if (runnerUpId) {
-        const runnerUp = playersById.get(runnerUpId);
-        if (runnerUp) {
-          results.push({ placement: 2, label: "finalist", player: runnerUp, rating: 0 });
-          placedIds.add(runnerUp.id);
-        }
-      }
+    const otherPlayerId = (match: TournamentBracketMatchDto, excludeId: string | null) =>
+      [match.playerA?.id, match.playerB?.id].find((id) => Boolean(id) && id !== excludeId) ?? null;
+
+    // The decisive final is the grand-final reset (if it was played) otherwise the primary final.
+    const finals = matches.filter((match) => match.phase === "final");
+    const resetFinal = finals.find((match) => match.isFinalReset) ?? null;
+    const primaryFinal = finals.find((match) => !match.isFinalReset && !match.isThirdPlace) ?? finals[0] ?? null;
+    const bronze = finals.find((match) => match.isThirdPlace) ?? null;
+    const decisiveFinal =
+      resetFinal && resetFinal.status === "finished" && resetFinal.winnerId ? resetFinal : primaryFinal;
+    const finalFinished = decisiveFinal?.status === "finished" && Boolean(decisiveFinal.winnerId);
+
+    if (finalFinished && decisiveFinal?.winnerId) {
+      pushPlace(decisiveFinal.winnerId, 1, "1", "winner");
+      pushPlace(otherPlayerId(decisiveFinal, decisiveFinal.winnerId), 2, "2", "finalist");
     }
 
-    const semifinalRound = matches
-      .filter((match) => match.phase === "upper")
-      .reduce((max, match) => Math.max(max, match.roundNumber), 0);
-    const semifinalLosers = matches
-      .filter((match) => match.phase === "upper" && match.roundNumber === semifinalRound && match.status === "finished")
-      .flatMap((match) => [match.playerA?.id, match.playerB?.id].filter((id): id is string => Boolean(id && id !== match.winnerId)));
-
-    semifinalLosers
-      .filter((playerId) => !placedIds.has(playerId))
-      .forEach((playerId, index) => {
-        const player = playersById.get(playerId);
-        if (player) {
-          results.push({
-            placement: 3 + index,
-            label: "semifinalist",
-            player,
-            rating: 0
-          });
-          placedIds.add(player.id);
-        }
-      });
+    if (bronze && bronze.status === "finished" && bronze.winnerId) {
+      pushPlace(bronze.winnerId, 3, "3", "thirdPlace");
+      pushPlace(otherPlayerId(bronze, bronze.winnerId), 4, "4", "fourthPlace");
+    }
 
     if (!finalFinished) {
       return results.sort((left, right) => left.placement - right.placement);
     }
 
-    const nextPlacement = results.length + 1;
-    [...playersById.values()]
+    // Remaining players ranked by elimination depth (a later loss earns a better place),
+    // then grouped into tie ranges such as 5-8.
+    const eliminationMatch = new Map<string, TournamentBracketMatchDto>();
+    for (const match of matches) {
+      if (match.status !== "finished" || match.isBye || !match.winnerId) {
+        continue;
+      }
+      for (const id of [match.playerA?.id, match.playerB?.id]) {
+        if (!id || id === match.winnerId) {
+          continue;
+        }
+        const current = eliminationMatch.get(id);
+        if (!current || match.matchNumber > current.matchNumber) {
+          eliminationMatch.set(id, match);
+        }
+      }
+    }
+
+    const weightOf = (playerId: string) => {
+      const match = eliminationMatch.get(playerId);
+      return match ? this.roundSortWeight(match.phase, match.roundNumber) : -1;
+    };
+
+    const remaining = [...playersById.values()]
       .filter((player) => !placedIds.has(player.id))
-      .forEach((player, index) => {
-        results.push({
-          placement: nextPlacement + index,
-          label: "participant",
-          player,
-          rating: 0
-        });
-      });
+      .sort(
+        (left, right) =>
+          weightOf(right.id) - weightOf(left.id) ||
+          (eliminationMatch.get(right.id)?.matchNumber ?? -1) - (eliminationMatch.get(left.id)?.matchNumber ?? -1) ||
+          (left.seed ?? 9999) - (right.seed ?? 9999)
+      );
+
+    let place = results.length + 1;
+    let index = 0;
+    while (index < remaining.length) {
+      const groupKey = eliminationMatch.get(remaining[index].id)?.roundKey ?? "none";
+      let end = index;
+      while (end < remaining.length && (eliminationMatch.get(remaining[end].id)?.roundKey ?? "none") === groupKey) {
+        end += 1;
+      }
+      const size = end - index;
+      const placeLabel = size > 1 ? `${place}-${place + size - 1}` : `${place}`;
+      for (let cursor = index; cursor < end; cursor += 1) {
+        pushPlace(remaining[cursor].id, place, placeLabel, "participant");
+      }
+      place += size;
+      index = end;
+    }
 
     return results.sort((left, right) => left.placement - right.placement);
   }

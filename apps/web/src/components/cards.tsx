@@ -1,10 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { Club, NewsItem, Player, Tournament } from "@/lib/types";
+import { Club, Coach, CoachQualificationKey, NewsItem, Player, Tournament } from "@/lib/types";
 import { useI18n } from "@/lib/i18n";
 import { MetricTile, StatusBadge, SurfaceCard, normalizeMetricText } from "./ui";
 import { getTournamentParticipantsProgress } from "@/lib/tournamentParticipants";
+import { categoryGradient, gradientFromString, initialsFromName } from "@/lib/visuals";
+
+const QUALIFICATION_I18N: Record<CoachQualificationKey, string> = {
+  INSTRUCTOR: "instructor",
+  MASTER: "master",
+  INTERNATIONAL_MASTER: "internationalMaster",
+  HONORED_COACH: "honoredCoach"
+};
+
+export function coachQualificationKey(qualification: CoachQualificationKey): string {
+  return QUALIFICATION_I18N[qualification] ?? "instructor";
+}
 
 export function TournamentCard({ item }: { item: Tournament }) {
   const { t, text, formatDate, formatCurrency, formatNumber } = useI18n();
@@ -184,6 +196,7 @@ export function PlayerRankRow({ item, rank }: { item: Player; rank: number }) {
   const rankColor = rank <= 3 ? PODIUM_RINGS[rank - 1] : "var(--muted)";
   const clubLabel = item.club?.name ? text(item.club.name) : null;
   const levelLabel = text(item.currentLevelLabel);
+  const disciplineLabel = item.disciplines[0] ?? null;
 
   return (
     <Link
@@ -207,6 +220,7 @@ export function PlayerRankRow({ item, rank }: { item: Player; rank: number }) {
         <p className="truncate text-xs" style={{ color: "var(--muted)" }}>
           {t(`common.cities.${item.cityKey}`)}
           {clubLabel ? ` · ${clubLabel}` : ""}
+          {disciplineLabel ? ` · ${disciplineLabel}` : ""}
         </p>
       </div>
 
@@ -218,6 +232,13 @@ export function PlayerRankRow({ item, rank }: { item: Player; rank: number }) {
           {levelLabel}
         </span>
       ) : null}
+
+      <div className="hidden shrink-0 text-center lg:block">
+        <p className="text-lg font-black leading-none" style={{ color: "var(--text)" }}>{item.tournamentsPlayed}</p>
+        <p className="mt-1 text-[10px] font-semibold uppercase" style={{ color: "var(--muted)" }}>
+          {t("players.tournamentsPlayed")}
+        </p>
+      </div>
 
       <div className="shrink-0 text-right">
         <p className="text-lg font-black leading-none" style={{ color: "var(--accent)" }}>{item.elo}</p>
@@ -267,6 +288,75 @@ export function ClubCard({ item }: { item: Club }) {
         </Link>
         <Link className="button-secondary inline-flex" href={`/clubs/${item.id}`}>
           {t("commonUi.seeClub")}
+        </Link>
+      </div>
+    </SurfaceCard>
+  );
+}
+
+export function CoachCard({ item }: { item: Coach }) {
+  const { t } = useI18n();
+  const initials = initialsFromName(item.fullName);
+  const location = [item.countryName, item.cityName].filter(Boolean).join(" · ");
+
+  return (
+    <Link href={`/coaches/${item.id}`} className="block">
+      <SurfaceCard className="showcase-card flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+          {item.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.photoUrl}
+              alt={item.fullName}
+              className="h-16 w-16 shrink-0 rounded-2xl object-cover"
+            />
+          ) : (
+            <span
+              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-xl font-black text-white"
+              style={{ backgroundImage: gradientFromString(item.fullName) }}
+            >
+              {initials}
+            </span>
+          )}
+          <div className="min-w-0">
+            <h3 className="showcase-card-title truncate text-lg font-semibold text-white">{item.fullName}</h3>
+            {location ? <p className="truncate text-sm text-muted">{location}</p> : null}
+          </div>
+        </div>
+
+        <div className="grid gap-1 text-sm text-muted">
+          <p className="metric-meta-line">{normalizeMetricText(`${t("coaches.specialization")}: ${item.specialization}`)}</p>
+          {item.clubName ? (
+            <p className="metric-meta-line">{normalizeMetricText(`${t("coaches.club")}: ${item.clubName}`)}</p>
+          ) : null}
+        </div>
+
+        {item.bio ? <p className="metric-copy text-sm leading-6 text-muted line-clamp-3">{item.bio}</p> : null}
+      </SurfaceCard>
+    </Link>
+  );
+}
+
+export function NewsPreviewCard({ item }: { item: NewsItem }) {
+  const { t, text, formatDate } = useI18n();
+  const excerpt = text(item.excerpt);
+
+  return (
+    <SurfaceCard className="showcase-card flex flex-col gap-4 overflow-hidden !p-0">
+      <Link href={`/news/${item.id}`} className="block">
+        <div
+          className="relative flex h-40 items-end p-4"
+          style={{ backgroundImage: categoryGradient(item.categoryKey) }}
+        >
+          <span className="pill absolute left-4 top-4">{t(`common.categories.${item.categoryKey}`)}</span>
+          <h3 className="showcase-card-title text-lg font-semibold text-white drop-shadow">{text(item.title)}</h3>
+        </div>
+      </Link>
+      <div className="flex flex-1 flex-col gap-3 px-5 pb-5">
+        <span className="text-xs uppercase tracking-[0.16em] text-muted">{formatDate(item.publishedAt)}</span>
+        <p className="metric-copy text-sm leading-6 text-muted line-clamp-3">{excerpt || "-"}</p>
+        <Link className="button-secondary mt-auto inline-flex w-fit" href={`/news/${item.id}`}>
+          {t("commonUi.readArticle")}
         </Link>
       </div>
     </SurfaceCard>

@@ -13,6 +13,8 @@ import {
   getRoundLabel
 } from "./bracket.utils";
 import { BracketGenerationService } from "./bracket-generation.service";
+import { BracketMatchProgressionService } from "./match-progression.service";
+import { BracketMatchStatuses } from "./bracket.types";
 import { isTeamComplete, isTeamFormat } from "../teams/teams.util";
 
 const bracketParticipantInclude = Prisma.validator<Prisma.BracketParticipantInclude>()({
@@ -52,8 +54,72 @@ export class BracketTournamentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly bracketGenerationService: BracketGenerationService,
+    private readonly progressionService: BracketMatchProgressionService,
     private readonly auditService: AuditService
   ) {}
+
+  /** Disqualify a participant: award walkovers in their open matches and advance opponents. */
+  async disqualifyParticipant(tournamentId: string, participantId: string, actor: RequestUser) {
+    const tournament = await this.getTournamentForMutation(tournamentId);
+    if (!tournament) {
+      throw new BracketHttpException(HttpStatus.NOT_FOUND, "Tournament not found.");
+    }
+    this.assertCanManageTournament(actor, tournament.organizerId);
+
+    const participant = await this.prisma.bracketParticipant.findFirst({
+      where: { id: participantId, tournamentId },
+      select: { id: true, name: true, disqualifiedAt: true }
+    });
+    if (!participant) {
+      throw new BracketHttpException(HttpStatus.NOT_FOUND, "Participant not found.");
+    }
+    if (participant.disqualifiedAt) {
+      throw new BracketHttpException(HttpStatus.CONFLICT, "Participant is already disqualified.");
+    }
+
+    await this.prisma.bracketParticipant.update({
+      where: { id: participantId },
+      data: { disqualifiedAt: new Date() }
+    });
+
+    // Open matches involving the participant become walkovers for the present opponent.
+    const openMatches = await this.prisma.bracketMatch.findMany({
+      where: {
+        tournamentId,
+        status: { in: [BracketMatchStatuses.PENDING, BracketMatchStatuses.READY, BracketMatchStatuses.LIVE] },
+        OR: [{ player1Id: participantId }, { player2Id: participantId }]
+      },
+      select: { id: true, player1Id: true, player2Id: true }
+    });
+
+    for (const match of openMatches) {
+      const opponentId = match.player1Id === participantId ? match.player2Id : match.player1Id;
+      if (!opponentId) {
+        continue;
+      }
+      await this.prisma.bracketMatch.update({
+        where: { id: match.id },
+        data: {
+          winnerId: opponentId,
+          loserId: participantId,
+          status: BracketMatchStatuses.FINISHED,
+          isBye: true
+        }
+      });
+    }
+
+    await this.progressionService.resolveTournamentProgression(tournamentId);
+
+    await this.auditService.log({
+      actor,
+      action: "bracket.participant.disqualify",
+      entityType: "tournament",
+      entityId: tournamentId,
+      metadata: { participantId, name: participant.name, walkovers: openMatches.length }
+    });
+
+    return this.listParticipants(tournamentId);
+  }
 
   async addParticipants(tournamentId: string, input: BracketParticipantInput[], actor: RequestUser) {
     const tournament = await this.getTournamentForMutation(tournamentId);
@@ -566,8 +632,17 @@ export class BracketTournamentsService {
       throw new BracketHttpException(HttpStatus.BAD_REQUEST, "Bracket has not been generated yet.");
     }
 
-    const finalRound = Math.max(...tournament.bracketMatches.map((match) => match.round));
-    const finalMatch = tournament.bracketMatches.find((match) => match.round === finalRound);
+    // Champion comes from the grand-final reset when it was played, otherwise from the
+    // primary final (the highest-round non-third-place, non-reset match).
+    const resetFinal = tournament.bracketMatches.find(
+      (match) => match.isFinalReset && match.status === BracketMatchStatuses.FINISHED && match.winner
+    );
+    const nonResetMatches = tournament.bracketMatches.filter((match) => !match.isFinalReset);
+    const primaryFinalRound = Math.max(...nonResetMatches.map((match) => match.round));
+    const primaryFinal =
+      nonResetMatches.find((match) => match.round === primaryFinalRound && !match.isThirdPlace) ??
+      nonResetMatches.find((match) => match.round === primaryFinalRound);
+    const finalMatch = resetFinal ?? primaryFinal;
 
     if (!finalMatch?.winner) {
       throw new BracketHttpException(

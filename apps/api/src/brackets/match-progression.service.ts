@@ -3,7 +3,7 @@ import { Prisma, TournamentStatus } from "@prisma/client";
 import { PrismaService } from "../common/prisma.service";
 import { playerLevelFromPoints } from "../players/player-levels";
 import { BracketHttpException } from "./bracket.exception";
-import { BracketMatchStatuses, BracketNextSlots } from "./bracket.types";
+import { BracketMatchPhases, BracketMatchStatuses, BracketNextSlots } from "./bracket.types";
 import {
   buildMatchBlueprints,
   buildSwissRoundBlueprints,
@@ -149,6 +149,41 @@ export class BracketMatchProgressionService {
             hasChanges = true;
             break;
           }
+        }
+      }
+
+      if (hasChanges) {
+        continue;
+      }
+
+      // Grand-final reset (double elimination): when the lower-bracket player wins the
+      // first final, stage the decisive second final between the same two players.
+      const resetFinal = matches.find((candidate) => candidate.isFinalReset);
+      if (resetFinal) {
+        const primaryFinal = matches.find(
+          (candidate) =>
+            candidate.phase === BracketMatchPhases.FINAL && !candidate.isThirdPlace && !candidate.isFinalReset
+        );
+        if (
+          primaryFinal &&
+          primaryFinal.status === BracketMatchStatuses.FINISHED &&
+          primaryFinal.winnerId &&
+          primaryFinal.loserId &&
+          primaryFinal.winnerId === primaryFinal.player2Id && // lower-bracket player won the first final
+          (resetFinal.player1Id !== primaryFinal.winnerId || resetFinal.player2Id !== primaryFinal.loserId)
+        ) {
+          await this.prisma.bracketMatch.update({
+            where: { id: resetFinal.id },
+            data: {
+              player1Id: primaryFinal.winnerId,
+              player2Id: primaryFinal.loserId,
+              status: BracketMatchStatuses.READY,
+              winnerId: null,
+              loserId: null,
+              isBye: false
+            }
+          });
+          hasChanges = true;
         }
       }
 
@@ -307,11 +342,36 @@ export class BracketMatchProgressionService {
       return;
     }
 
-    const finalRound = Math.max(...matches.map((match) => match.round));
-    // The championship final is the non-third-place match in the final round.
-    const finalMatch =
-      matches.find((match) => match.round === finalRound && !match.isThirdPlace) ??
-      matches.find((match) => match.round === finalRound);
+    // Determine the decisive championship final.
+    // - Single elimination: the highest-round non-third-place match (round-based, phase-agnostic).
+    // - Double elimination: the grand final, unless the lower-bracket player won it — then the
+    //   decisive match is the grand-final reset (second final).
+    const resetFinal = matches.find((match) => match.isFinalReset) ?? null;
+    const nonResetMatches = matches.filter((match) => !match.isFinalReset);
+    const primaryFinalRound = Math.max(...nonResetMatches.map((match) => match.round));
+    const primaryFinal =
+      nonResetMatches.find((match) => match.round === primaryFinalRound && !match.isThirdPlace) ??
+      nonResetMatches.find((match) => match.round === primaryFinalRound) ??
+      null;
+
+    let finalMatch: TournamentBracketMatchRecord | null = null;
+    if (
+      resetFinal &&
+      resetFinal.status === BracketMatchStatuses.FINISHED &&
+      resetFinal.winnerId &&
+      resetFinal.player1Id &&
+      resetFinal.player2Id
+    ) {
+      // The reset was triggered and played out — it decides the title.
+      finalMatch = resetFinal;
+    } else if (primaryFinal && primaryFinal.status === BracketMatchStatuses.FINISHED && primaryFinal.winnerId) {
+      // The primary final decides the title unless a reset is pending (lower-bracket player
+      // won the first final but the second final has not been played yet).
+      const resetPending = Boolean(resetFinal) && primaryFinal.winnerId === primaryFinal.player2Id;
+      if (!resetPending) {
+        finalMatch = primaryFinal;
+      }
+    }
 
     if (finalMatch?.status === BracketMatchStatuses.FINISHED && finalMatch.winnerId) {
       const wasFinished = tournament.status === TournamentStatus.FINISHED;

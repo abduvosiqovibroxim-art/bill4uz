@@ -26,6 +26,7 @@ const copy = {
     closedNow: "Закрыто",
     unknownStatus: "График не указан",
     phone: "Телефон",
+    address: "Адрес",
     telegram: "Telegram",
     workingHours: "Рабочее время",
     phoneMissing: "Телефон не указан",
@@ -45,6 +46,7 @@ const copy = {
     closedNow: "Yopiq",
     unknownStatus: "Ish vaqti kiritilmagan",
     phone: "Telefon",
+    address: "Manzil",
     telegram: "Telegram",
     workingHours: "Ish vaqti",
     phoneMissing: "Telefon kiritilmagan",
@@ -64,6 +66,7 @@ const copy = {
     closedNow: "Closed",
     unknownStatus: "Hours not set",
     phone: "Phone",
+    address: "Address",
     telegram: "Telegram",
     workingHours: "Working hours",
     phoneMissing: "Phone not specified",
@@ -119,16 +122,20 @@ export function BookingPageClient() {
     })();
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
-      {/* Header */}
-      <section className="container-shell py-12">
-        <h1 className="text-5xl md:text-6xl font-black mb-4 leading-tight" style={{ color: "var(--text)" }}>{c.title}</h1>
-        <p className="text-xl" style={{ color: "var(--muted)" }}>
-          {locale === "ru" ? "Найдите бильярдную рядом с вами" : locale === "uz" ? "Yaqinroq bilyard joyini toping" : "Find a billiard place near you"}
-        </p>
+    <div className="portal-wrap">
+      <div className="portal">
+      {/* Compact hero */}
+      <section className="portal-hero portal-hero-solo" style={{ padding: "clamp(1.2rem, 3vw, 2rem)" }}>
+        <div className="portal-hero-copy">
+          <span className="portal-eyebrow">{c.title}</span>
+          <h1 className="portal-hero-title" style={{ fontSize: "clamp(1.8rem, 1.2rem + 2.4vw, 2.6rem)" }}>{c.title}</h1>
+          <p className="portal-hero-lead">
+            {locale === "ru" ? "Найдите бильярдную рядом с вами — адреса, телефоны и маршруты на карте." : locale === "uz" ? "Yaqinroq bilyard joyini toping — manzil, telefon va yo'nalishlar xaritada." : "Find a billiard place near you — addresses, phones and routes on the map."}
+          </p>
+        </div>
       </section>
 
-      <section className="container-shell pb-12">
+      <section>
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Clubs list */}
           <div className="lg:col-span-1 space-y-4 lg:h-[600px] lg:overflow-y-auto lg:pr-2 booking-scroll">
@@ -147,7 +154,6 @@ export function BookingPageClient() {
                   club={club}
                   isSelected={club.id === selectedClub?.id}
                   labels={c}
-                  cityLabel={t(`common.cities.${club.cityKey}`)}
                   text={text}
                   onSelect={() => setSelectedClubId(club.id)}
                 />
@@ -167,6 +173,7 @@ export function BookingPageClient() {
           </div>
         </div>
       </section>
+      </div>
     </div>
   );
 }
@@ -206,104 +213,83 @@ function ClubListCard({
   club,
   isSelected,
   labels,
-  cityLabel,
   text,
   onSelect
 }: {
   club: Club;
   isSelected: boolean;
   labels: BookingLabels;
-  cityLabel: string;
   text: TextFn;
   onSelect: () => void;
 }) {
   const status = resolveStatus(text(club.workHours), labels);
   const callHref = phoneHref(club.phone);
   const isOpen = isOpenNow(text(club.workHours));
-  const coverImage = club.coverImageUrl || club.coverUrl;
+  const logo = club.coverImageUrl || club.coverUrl;
+  const phones = splitPhones(club.phone);
+  const addressText = text(club.address);
+  const flag = club.countryCode && /^[a-z]{2}$/.test(club.countryCode) ? club.countryCode : null;
 
   return (
-    <article className="rounded-xl transition-all cursor-pointer overflow-hidden hover:scale-[1.02]" style={{ background: isSelected ? "var(--surface-selected)" : "var(--surface)", border: isSelected ? "2px solid var(--accent)" : "1px solid var(--card-border)", boxShadow: isSelected ? "var(--shadow-glow)" : "var(--shadow-soft)" }} onClick={onSelect}>
-      {/* Cover Image */}
-      {coverImage && (
-        <div className="relative w-full h-40 overflow-hidden">
-          <img
-            src={coverImage}
-            alt={text(club.name)}
-            className="w-full h-full object-cover"
-          />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+    <article className="rounded-xl transition-all cursor-pointer overflow-hidden hover:scale-[1.01]" style={{ background: isSelected ? "var(--surface-selected)" : "var(--surface)", border: isSelected ? "2px solid var(--accent)" : "1px solid var(--card-border)", boxShadow: isSelected ? "var(--shadow-glow)" : "var(--shadow-soft)" }} onClick={onSelect}>
+      <div className="p-5 flex flex-col items-center text-center">
+        {/* Logo */}
+        <div className="h-24 w-24 mb-3 rounded-2xl flex items-center justify-center overflow-hidden" style={{ background: "var(--surface-soft)", border: "1px solid var(--card-border)" }}>
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt={text(club.name)} className="h-full w-full object-contain p-1.5" />
+          ) : (
+            <span className="text-3xl" aria-hidden="true">🎱</span>
+          )}
+        </div>
 
-          {/* Rating badge */}
-          {club.rating && (
-            <div className="absolute top-3 right-3 px-3 py-1.5 rounded-lg flex items-center gap-1.5" style={{ background: "rgba(10, 15, 20, 0.95)", backdropFilter: "blur(8px)", border: "1px solid var(--accent)" }}>
-              <span className="text-base">⭐</span>
-              <span className="text-base font-black" style={{ color: "var(--accent)" }}>{club.rating.toFixed(1)}</span>
-            </div>
-          )}
-          {/* Status badge */}
-          <div className="absolute top-3 left-3 px-3 py-1.5 text-xs font-black uppercase rounded-lg" style={{ background: isOpen ? "var(--danger)" : "rgba(10, 15, 20, 0.95)", color: isOpen ? "#fff" : "var(--muted)" }}>
-            {status}
-          </div>
-        </div>
-      )}
+        {/* Flag + name */}
+        <h2 className="flex items-center justify-center gap-2 text-lg font-black leading-tight" style={{ color: "var(--text)" }}>
+          {flag ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`https://flagcdn.com/24x18/${flag}.png`} alt="" width={20} height={15} className="shrink-0 rounded-sm" style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.12)" }} />
+          ) : null}
+          <span>{text(club.name)}</span>
+          {club.isVerified ? <span style={{ color: "var(--emerald)" }}>✓</span> : null}
+        </h2>
 
-      <div className="p-5">
-        <div className="flex items-start justify-between mb-3">
-          <h2 className="text-lg font-black leading-tight" style={{ color: "var(--text)" }}>{text(club.name)}</h2>
-          {club.isVerified && (
-            <span className="px-2.5 py-1 text-xs font-black rounded-lg" style={{ background: "var(--emerald)", color: "var(--bg)" }}>
-              ✓
+        {/* Status + rating + tables */}
+        <div className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-bold">
+          {isOpen !== null ? (
+            <span className="flex items-center gap-1.5" style={{ color: isOpen ? "var(--danger)" : "var(--muted)" }}>
+              <span style={{ fontSize: "9px" }}>●</span>{status}
             </span>
-          )}
+          ) : null}
+          {club.rating !== null ? (
+            <span style={{ color: "var(--accent)" }}>⭐ {club.rating.toFixed(1)}</span>
+          ) : null}
+          {club.tableCount > 0 ? (
+            <span style={{ color: "var(--text)" }}>🎱 {club.tableCount}</span>
+          ) : null}
         </div>
-        <p className="text-sm mb-1 font-medium" style={{ color: "var(--muted)" }}>{cityLabel}</p>
-        {isOpen !== null && (
-          <p className="text-sm mb-1 font-bold flex items-center gap-1.5" style={{ color: isOpen ? "var(--danger)" : "var(--muted)" }}>
-            <span style={{ fontSize: "10px" }}>●</span>
-            <span>{status}</span>
-          </p>
-        )}
-        <div className="flex items-center gap-3 mb-1">
-          {club.rating !== null && (
-            <span className="text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--accent)" }}>
-              <span>⭐</span>
-              <span>{club.rating.toFixed(1)}</span>
-              {club.reviewsCount > 0 && (
-                <span className="font-medium" style={{ color: "var(--muted)" }}>({club.reviewsCount})</span>
-              )}
-            </span>
+
+        {/* Address */}
+        <p className="mt-3 text-sm" style={{ color: "var(--muted)" }}>
+          <span className="font-bold" style={{ color: "var(--text)" }}>{labels.address}:</span> {addressText || "—"}
+        </p>
+
+        {/* Phone */}
+        <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+          <span className="font-bold" style={{ color: "var(--text)" }}>{labels.phone}:</span>{" "}
+          {phones.length === 0 ? (
+            <span>{labels.phoneMissing}</span>
+          ) : (
+            phones.map((p, index) => (
+              <span key={p}>
+                {index > 0 ? ", " : ""}
+                <a href={phoneHref(p) ?? undefined} className="font-semibold hover:underline" style={{ color: "var(--text)" }} onClick={(e) => e.stopPropagation()}>{p}</a>
+              </span>
+            ))
           )}
-          {club.tableCount > 0 && (
-            <span className="text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--text)" }}>
-              <span>🎱</span>
-              <span>{club.tableCount}</span>
-            </span>
-          )}
-        </div>
-        {(() => {
-          const phones = splitPhones(club.phone);
-          if (phones.length === 0) {
-            return <p className="text-sm mb-4 font-medium" style={{ color: "var(--muted)" }}>{labels.phoneMissing}</p>;
-          }
-          return (
-            <div className="flex flex-col gap-1 mb-4">
-              {phones.map((p) => (
-                <a
-                  key={p}
-                  href={phoneHref(p) ?? undefined}
-                  className="text-sm font-semibold hover:underline w-fit"
-                  style={{ color: "var(--text)" }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  📞 {p}
-                </a>
-              ))}
-            </div>
-          );
-        })()}
-        <div className="flex gap-2">
+        </p>
+
+        {/* Actions */}
+        <div className="mt-4 flex w-full gap-2">
           {callHref ? (
             <a href={callHref} className="flex-1 px-4 py-2.5 text-center text-sm font-bold rounded-lg transition-all hover:scale-105" style={{ background: "var(--accent)", color: "var(--bg)" }} onClick={(e) => e.stopPropagation()}>
               {labels.call}
@@ -331,62 +317,66 @@ function SelectedClubSheet({
   const tgHref = telegramHref(club.telegram);
   const directionsHref = routeHref(club, text(club.name));
 
+  const logo = club.coverImageUrl || club.coverUrl;
+  const flag = club.countryCode && /^[a-z]{2}$/.test(club.countryCode) ? club.countryCode : null;
+  const addressText = text(club.address);
+
   return (
     <article className="absolute bottom-0 left-0 right-0 p-6 rounded-t-lg" style={{ background: "var(--surface)", border: "1px solid var(--card-border)", borderBottom: "none" }}>
-      <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text)" }}>{text(club.name)}</h2>
-      <p className="text-sm mb-3" style={{ color: "var(--muted)" }}>{text(club.address) || "-"}</p>
-      {(() => {
-        const photos = [club.coverImageUrl, club.coverUrl].filter((src): src is string => Boolean(src));
-        if (photos.length === 0) {
-          return (
-            <div className="mb-4 h-28 rounded-lg flex items-center justify-center text-sm" style={{ background: "var(--surface-soft)", color: "var(--muted)", border: "1px dashed var(--card-border)" }}>
-              📷 Фото пока нет
-            </div>
-          );
-        }
-        return (
-          <div className="mb-4 flex gap-2 overflow-x-auto booking-scroll">
-            {photos.map((src, i) => (
-              <img key={i} src={src} alt={text(club.name)} className="h-28 rounded-lg object-cover" style={{ minWidth: "10rem" }} />
-            ))}
-          </div>
-        );
-      })()}
+      {/* Header: logo + flag + name + rating */}
+      <div className="flex flex-col items-center text-center mb-4">
+        <div className="h-20 w-20 mb-3 rounded-2xl flex items-center justify-center overflow-hidden" style={{ background: "var(--surface-soft)", border: "1px solid var(--card-border)" }}>
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt={text(club.name)} className="h-full w-full object-contain p-1.5" />
+          ) : (
+            <span className="text-2xl" aria-hidden="true">🎱</span>
+          )}
+        </div>
+        <h2 className="flex items-center justify-center gap-2 text-xl font-bold" style={{ color: "var(--text)" }}>
+          {flag ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`https://flagcdn.com/24x18/${flag}.png`} alt="" width={22} height={16} className="shrink-0 rounded-sm" style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.12)" }} />
+          ) : null}
+          <span>{text(club.name)}</span>
+        </h2>
+        {club.rating !== null ? (
+          <p className="mt-1 text-sm font-bold" style={{ color: "var(--accent)" }}>
+            ⭐ {club.rating.toFixed(1)}{club.reviewsCount > 0 ? ` (${club.reviewsCount})` : ""}
+          </p>
+        ) : null}
+      </div>
+
+      {/* Details */}
       <div className="grid gap-2 text-sm mb-4">
-        {club.rating !== null && (
-          <p style={{ color: "var(--muted)" }}>
-            <span className="font-semibold" style={{ color: "var(--text)" }}>⭐ {club.rating.toFixed(1)}</span>
-            {club.reviewsCount > 0 ? ` (${club.reviewsCount})` : ""}
-          </p>
-        )}
-        {club.tableCount > 0 && (
-          <p style={{ color: "var(--muted)" }}>
-            <span className="font-semibold" style={{ color: "var(--text)" }}>🎱 {labels.tables}:</span> {club.tableCount}
-          </p>
-        )}
         <p style={{ color: "var(--muted)" }}>
-          <span className="font-semibold" style={{ color: "var(--text)" }}>{labels.workingHours}:</span> {text(club.workHours) || "-"}
+          <span className="font-bold" style={{ color: "var(--text)" }}>{labels.address}:</span> {addressText || "-"}
+        </p>
+        {club.tableCount > 0 ? (
+          <p style={{ color: "var(--muted)" }}>
+            <span className="font-bold" style={{ color: "var(--text)" }}>🎱 {labels.tables}:</span> {club.tableCount}
+          </p>
+        ) : null}
+        <p style={{ color: "var(--muted)" }}>
+          <span className="font-bold" style={{ color: "var(--text)" }}>{labels.workingHours}:</span> {text(club.workHours) || "-"}
         </p>
         <div style={{ color: "var(--muted)" }}>
-          <span className="font-semibold" style={{ color: "var(--text)" }}>{labels.phone}:</span>{" "}
+          <span className="font-bold" style={{ color: "var(--text)" }}>{labels.phone}:</span>{" "}
           {(() => {
             const phones = splitPhones(club.phone);
             if (phones.length === 0) {
               return <span>{labels.phoneMissing}</span>;
             }
-            return (
-              <span className="inline-flex flex-col gap-0.5 align-top">
-                {phones.map((p) => (
-                  <a key={p} href={phoneHref(p) ?? undefined} className="hover:underline" style={{ color: "var(--text)" }}>
-                    {p}
-                  </a>
-                ))}
+            return phones.map((p, index) => (
+              <span key={p}>
+                {index > 0 ? ", " : ""}
+                <a href={phoneHref(p) ?? undefined} className="hover:underline" style={{ color: "var(--text)" }}>{p}</a>
               </span>
-            );
+            ));
           })()}
         </div>
         <p style={{ color: "var(--muted)" }}>
-          <span className="font-semibold" style={{ color: "var(--text)" }}>{labels.telegram}:</span> {club.telegram || "-"}
+          <span className="font-bold" style={{ color: "var(--text)" }}>{labels.telegram}:</span> {club.telegram || "-"}
         </p>
       </div>
       <div className="flex gap-2">

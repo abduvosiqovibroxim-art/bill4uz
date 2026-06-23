@@ -1,7 +1,7 @@
-import type { AdminUser, ApplicationEntry, BookingEntry, BracketPoolParticipant, CityOption, Club, ClubAvailability, ClubDetail, ClubTable, CountryOption, DisciplineOption, MediaEntry, NewsItem, PlayerDetail, RankingEntry, Tournament, TournamentDetail } from "@/lib/types";
-import { adaptAdminUser, adaptApplication, adaptBooking, adaptCity, adaptClub, adaptClubAvailability, adaptClubDetail, adaptClubTable, adaptCountry, adaptDiscipline, adaptGallery, adaptNews, adaptPlayer, adaptPlayerDetail, adaptRanking, adaptTournament, adaptTournamentDetail } from "./adapters";
+import type { AdminUser, ApplicationEntry, BookingEntry, BracketPoolParticipant, CityOption, Club, ClubAvailability, ClubDetail, ClubTable, Coach, CoachDetail, CountryOption, DisciplineOption, MediaEntry, NewsItem, PlayerDetail, RankingEntry, Tournament, TournamentDetail, TournamentStandings, DisputeEntry } from "@/lib/types";
+import { adaptAdminUser, adaptApplication, adaptBooking, adaptCity, adaptClub, adaptClubAvailability, adaptClubDetail, adaptClubTable, adaptCoach, adaptCoachDetail, adaptCountry, adaptDiscipline, adaptGallery, adaptNews, adaptPlayer, adaptPlayerDetail, adaptRanking, adaptTournament, adaptTournamentDetail } from "./adapters";
 import { apiFetch } from "./client";
-import type { RawApplication, RawBooking, RawCity, RawClub, RawClubAvailability, RawClubTable, RawCountry, RawDiscipline, RawGallery, RawNews, RawPlayer, RawRanking, RawTournament, RawUser } from "./contracts";
+import type { RawApplication, RawBooking, RawCity, RawClub, RawClubAvailability, RawClubTable, RawCoach, RawCoachDetail, RawCountry, RawDiscipline, RawGallery, RawNews, RawPlayer, RawRanking, RawTournament, RawUser } from "./contracts";
 import type { ApplicationListFilters, BookingSlotsFilters, ClubListFilters, TournamentListFilters } from "./queryKeys";
 
 interface BracketEnvelope<T> {
@@ -36,6 +36,16 @@ export async function fetchPlayers() {
 export async function fetchPlayer(id: string): Promise<PlayerDetail | null> {
   const response = await apiFetch<RawPlayer | null>(`/players/${id}`);
   return response ? adaptPlayerDetail(response) : null;
+}
+
+export async function fetchCoaches(): Promise<Coach[]> {
+  const response = await apiFetch<RawCoach[]>("/coaches");
+  return response.map(adaptCoach);
+}
+
+export async function fetchCoach(id: string): Promise<CoachDetail | null> {
+  const response = await apiFetch<RawCoachDetail | null>(`/coaches/${id}`);
+  return response ? adaptCoachDetail(response) : null;
 }
 
 export async function fetchClubs(filters: ClubListFilters = {}) {
@@ -113,6 +123,29 @@ async function bracketFetch<T>(path: string, options: Parameters<typeof apiFetch
 
 export async function fetchBracketParticipants(tournamentId: string): Promise<BracketPoolParticipant[]> {
   return bracketFetch<BracketPoolParticipant[]>(`/tournaments/${tournamentId}/participants`);
+}
+
+export async function fetchTournamentStandings(tournamentId: string): Promise<TournamentStandings> {
+  return bracketFetch<TournamentStandings>(`/tournaments/${tournamentId}/standings`);
+}
+
+export async function fetchTournamentDisputes(tournamentId: string): Promise<DisputeEntry[]> {
+  // The disputes controller returns the raw array (no {success,data} envelope).
+  return apiFetch<DisputeEntry[]>(`/tournaments/${tournamentId}/disputes`);
+}
+
+export async function resolveDispute(disputeId: string, input: { status: "UPHELD" | "REJECTED"; resolution?: string }) {
+  return apiFetch<DisputeEntry>(`/disputes/${disputeId}/resolve`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input)
+  });
+}
+
+export async function disqualifyBracketParticipant(tournamentId: string, participantId: string) {
+  return bracketFetch(`/tournaments/${tournamentId}/participants/${participantId}/disqualify`, {
+    method: "POST"
+  });
 }
 
 export async function fetchTournamentApplications(tournamentId: string): Promise<ApplicationEntry[]> {
@@ -515,6 +548,28 @@ export async function updateBracketMatchResult(
   input: { winnerId: string; player1Score?: number; player2Score?: number }
 ) {
   return bracketFetch(`/matches/${matchId}/result`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(input)
+  });
+}
+
+export async function rollbackBracketMatch(matchId: string) {
+  return bracketFetch(`/matches/${matchId}/rollback`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+}
+
+export async function overrideBracketMatchResult(
+  matchId: string,
+  input: { winnerId: string; player1Score?: number; player2Score?: number }
+) {
+  return bracketFetch(`/matches/${matchId}/override`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json"

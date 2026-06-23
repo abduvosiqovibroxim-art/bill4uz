@@ -19,7 +19,7 @@ export function ResultsTable({ results }: { results: TournamentResultEntry[] }) 
           <div key={`${entry.player.id}-${entry.placement}`} className="surface-card space-y-3">
             <div className="flex items-center justify-between gap-3">
               <span className="pill">
-                {t("tournamentCenter.results.place")} #{entry.placement}
+                {t("tournamentCenter.results.place")} #{entry.placeLabel}
               </span>
               <span className="bracket-status bracket-status-finished">
                 {t(`tournamentCenter.resultLabels.${entry.label}`)}
@@ -50,7 +50,7 @@ export function ResultsTable({ results }: { results: TournamentResultEntry[] }) 
           <tbody>
             {results.map((entry) => (
               <tr key={`${entry.player.id}-${entry.placement}`}>
-                <td>{entry.placement}</td>
+                <td>{entry.placeLabel}</td>
                 <td>
                   <Link href={`/players/${entry.player.id}`} className="font-medium text-white transition hover:text-accent">
                     {entry.player.fullName}

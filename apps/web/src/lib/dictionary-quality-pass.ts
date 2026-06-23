@@ -3,16 +3,16 @@ import type { Locale } from "./types";
 export const dictionaryQualityPass: Record<Locale, Record<string, unknown>> = {
   ru: {
     commonUi: {
-      exploreTournaments: "�������� �������"
+      exploreTournaments: "Смотреть турниры"
     },
     home: {
       sections: {
-        rankingsSubtitle: "������������ ������� �� ����� ������, ����� � ������������."
+        rankingsSubtitle: "Национальный рейтинг по текущей форме, очкам и стабильности сезона."
       }
     },
     clubs: {
-      subtitle: "����������� �������� � ����������, ��������� � ��������� �����������.",
-      networkCities: "������ ����"
+      subtitle: "Проверенные площадки с контактами, сервисами и турнирной активностью.",
+      networkCities: "Города сети"
     }
   },
   uz: {

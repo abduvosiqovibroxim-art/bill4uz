@@ -5,7 +5,7 @@ import type { LocalizedTextDto } from "../tournaments/dto";
 import { tournamentDisciplineKeyFromName } from "../tournaments/disciplines";
 import { nextPlayerLevel, pointsToNextLevel } from "./player-levels";
 import { winPercentage } from "../rating/rating.util";
-import { PlayerComputedFields, PlayerDetailComputedFields, PlayerLocalizedFields, PlayerTournamentHistoryItemDto } from "./dto";
+import { PlayerComputedFields, PlayerDetailComputedFields, PlayerLocalizedFields, PlayerRecentMatchDto, PlayerTournamentHistoryItemDto } from "./dto";
 
 const playerListInclude = Prisma.validator<Prisma.PlayerInclude>()({
   city: true,
@@ -14,6 +14,15 @@ const playerListInclude = Prisma.validator<Prisma.PlayerInclude>()({
     include: {
       city: true,
       country: true
+    }
+  },
+  applications: {
+    select: {
+      tournament: {
+        select: {
+          discipline: { select: { name: true } }
+        }
+      }
     }
   }
 });
@@ -26,6 +35,10 @@ const playerDetailInclude = Prisma.validator<Prisma.PlayerInclude>()({
       city: true,
       country: true
     }
+  },
+  rankings: {
+    orderBy: { position: "asc" },
+    take: 1
   },
   applications: {
     include: {
@@ -94,22 +107,59 @@ export class PlayersService {
       return null;
     }
 
-    return this.serializePlayerDetail(player);
+    const recentMatches = await this.loadRecentMatches(id);
+    return this.serializePlayerDetail(player, recentMatches);
   }
 
   private serializePlayer(player: PlayerListRecord): PlayerListResponse {
+    const { applications, ...rest } = player;
     return {
-      ...player,
+      ...rest,
       achievements: player.achievements.map((achievement) => this.localizeAchievement(achievement)),
       ...this.getComputedFields(player)
-    };
+    } as PlayerListResponse;
   }
 
-  private serializePlayerDetail(player: PlayerDetailRecord): PlayerDetailResponse {
+  private async loadRecentMatches(playerId: string): Promise<PlayerRecentMatchDto[]> {
+    const matches = await this.prisma.bracketMatch.findMany({
+      where: {
+        status: "FINISHED",
+        OR: [{ player1: { is: { playerId } } }, { player2: { is: { playerId } } }]
+      },
+      orderBy: [{ scheduledAt: "desc" }, { updatedAt: "desc" }],
+      take: 8,
+      include: {
+        tournament: { select: { id: true, title: true } },
+        player1: { include: { player: { select: { id: true, fullName: true } } } },
+        player2: { include: { player: { select: { id: true, fullName: true } } } },
+        winner: { select: { playerId: true } }
+      }
+    });
+
+    return matches.map((match) => {
+      const isPlayerOne = match.player1?.playerId === playerId;
+      const opponent = isPlayerOne ? match.player2 : match.player1;
+      return {
+        id: match.id,
+        tournamentId: match.tournamentId,
+        tournamentTitle: match.tournament?.title ?? null,
+        opponentId: opponent?.player?.id ?? opponent?.playerId ?? null,
+        opponentName: opponent?.player?.fullName ?? opponent?.name ?? "—",
+        scoreFor: (isPlayerOne ? match.player1Score : match.player2Score) ?? null,
+        scoreAgainst: (isPlayerOne ? match.player2Score : match.player1Score) ?? null,
+        isWin: match.winner?.playerId === playerId,
+        playedAt: match.scheduledAt ?? match.updatedAt ?? null
+      };
+    });
+  }
+
+  private serializePlayerDetail(player: PlayerDetailRecord, recentMatches: PlayerRecentMatchDto[]): PlayerDetailResponse {
     return {
       ...player,
       achievements: player.achievements.map((achievement) => this.localizeAchievement(achievement)),
       ...this.getComputedFields(player),
+      worldRank: player.rankings[0]?.position ?? null,
+      recentMatches,
       tournamentHistory: player.applications
         .map((application) => application.tournament)
         .filter((tournament): tournament is PlayerTournamentRecord => Boolean(tournament))
@@ -130,8 +180,24 @@ export class PlayersService {
       nextLevel,
       nextLevelLabel: nextLevel ? this.playerLevelLabel(nextLevel) : null,
       pointsToNextLevel: pointsToNextLevel(player.levelPoints),
-      winPercentage: winPercentage(player.wins, player.losses)
+      winPercentage: winPercentage(player.wins, player.losses),
+      disciplines: this.extractDisciplines(player)
     };
+  }
+
+  private extractDisciplines(player: PlayerListRecord | PlayerDetailRecord): string[] {
+    const applications = (player as { applications?: Array<{ tournament?: { discipline?: { name?: string | null } | null } | null }> }).applications;
+    if (!applications) {
+      return [];
+    }
+    const names = new Set<string>();
+    for (const application of applications) {
+      const name = application.tournament?.discipline?.name;
+      if (name) {
+        names.add(name);
+      }
+    }
+    return [...names];
   }
 
   private serializeTournamentHistoryItem(tournament: PlayerTournamentRecord): PlayerTournamentHistoryItemDto {

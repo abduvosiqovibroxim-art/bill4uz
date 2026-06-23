@@ -103,6 +103,26 @@ export class BotController {
   }
 
   @UseGuards(BotInternalGuard)
+  @Get("internal/tournaments/:tournamentId/reportable-matches")
+  getReportableMatches(@Param("tournamentId") tournamentId: string, @Query("telegramId") telegramId: string) {
+    return this.botService.getReportableMatches(tournamentId, telegramId);
+  }
+
+  @UseGuards(BotInternalGuard)
+  @Post("internal/matches/:matchId/report-result")
+  reportMatchResult(
+    @Param("matchId") matchId: string,
+    @Body()
+    body: { telegramId: string; winnerParticipantId: string; player1Score?: number; player2Score?: number }
+  ) {
+    return this.botService.reportMatchResult(matchId, body.telegramId, {
+      winnerParticipantId: body.winnerParticipantId,
+      player1Score: body.player1Score,
+      player2Score: body.player2Score
+    });
+  }
+
+  @UseGuards(BotInternalGuard)
   @Post("internal/notifications/sweep-reminders")
   sweepTelegramReminders() {
     return this.botService.sweepTelegramReminders();

@@ -21,6 +21,8 @@ import { BookingsModule } from "./bookings/bookings.module";
 import { StaffModule } from "./staff/staff.module";
 import { CashierModule } from "./cashier/cashier.module";
 import { TeamsModule } from "./teams/teams.module";
+import { DisputesModule } from "./disputes/disputes.module";
+import { CoachesModule } from "./coaches/coaches.module";
 
 @Module({
   imports: [
@@ -44,7 +46,9 @@ import { TeamsModule } from "./teams/teams.module";
     BookingsModule,
     StaffModule,
     CashierModule,
-    TeamsModule
+    TeamsModule,
+    DisputesModule,
+    CoachesModule
   ],
   controllers: [AppController]
 })

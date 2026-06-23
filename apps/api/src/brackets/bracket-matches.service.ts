@@ -4,10 +4,22 @@ import { RequestUser } from "../auth/dto";
 import { PrismaService } from "../common/prisma.service";
 import { BracketHttpException } from "./bracket.exception";
 import {
+  BracketMatchPhases,
   BracketMatchStatuses,
+  BracketNextSlots,
   UpdateBracketResultInput,
   UpdateBracketStatusInput
 } from "./bracket.types";
+
+interface RollbackEntry {
+  playerId: string;
+  isWinner: boolean;
+  eloDelta: number;
+  mmrDelta: number;
+  levelPointsDelta: number;
+  winStreakBefore: number;
+  bestWinStreakBefore: number;
+}
 import { BracketMatchProgressionService } from "./match-progression.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { AuditService } from "../platform/audit.service";
@@ -167,6 +179,185 @@ export class BracketMatchesService {
     return this.getMatchById(id);
   }
 
+  /** Roll back a finished match: exactly reverse the rating snapshot and unwind progression. */
+  async rollbackMatch(id: string, actor: RequestUser) {
+    const match = await this.getMatchById(id);
+    this.assertCanManageTournament(actor, match.tournament.organizerId);
+
+    if (match.status !== BracketMatchStatuses.FINISHED) {
+      throw new BracketHttpException(HttpStatus.BAD_REQUEST, "Only a finished match can be rolled back.");
+    }
+    if (match.isBye) {
+      throw new BracketHttpException(HttpStatus.BAD_REQUEST, "A BYE match cannot be rolled back.");
+    }
+    if (match.tournament.status === "FINISHED") {
+      throw new BracketHttpException(
+        HttpStatus.CONFLICT,
+        "Tournament is already completed; roll back is not available after completion."
+      );
+    }
+
+    const downstreamIds = [match.nextMatchId, match.loserNextMatchId].filter((value): value is string => Boolean(value));
+    if (downstreamIds.length > 0) {
+      const downstream = await this.prisma.bracketMatch.findMany({
+        where: { id: { in: downstreamIds } },
+        select: { id: true, status: true }
+      });
+      if (
+        downstream.some(
+          (item) => item.status === BracketMatchStatuses.LIVE || item.status === BracketMatchStatuses.FINISHED
+        )
+      ) {
+        throw new BracketHttpException(
+          HttpStatus.CONFLICT,
+          "Cannot roll back: a following match has already started or finished."
+        );
+      }
+    }
+
+    // Double elimination: the grand-final reset is staged programmatically (not via
+    // nextMatchId links), so treat it as a downstream of the primary final explicitly.
+    const isPrimaryFinal =
+      match.phase === BracketMatchPhases.FINAL && !match.isThirdPlace && !match.isFinalReset;
+    const resetSibling = isPrimaryFinal
+      ? await this.prisma.bracketMatch.findFirst({
+          where: { tournamentId: match.tournamentId, isFinalReset: true },
+          select: { id: true, status: true }
+        })
+      : null;
+    if (
+      resetSibling &&
+      (resetSibling.status === BracketMatchStatuses.LIVE || resetSibling.status === BracketMatchStatuses.FINISHED)
+    ) {
+      throw new BracketHttpException(
+        HttpStatus.CONFLICT,
+        "Cannot roll back: the decisive final has already started or finished."
+      );
+    }
+
+    const meta = (match.resultMeta as { entries?: RollbackEntry[] } | null)?.entries;
+    if (!meta || meta.length === 0) {
+      throw new BracketHttpException(
+        HttpStatus.CONFLICT,
+        "This result has no reversible snapshot and cannot be rolled back automatically."
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const entry of meta) {
+        const player = await tx.player.findUnique({
+          where: { id: entry.playerId },
+          select: { elo: true, mmr: true, levelPoints: true }
+        });
+        if (!player) {
+          continue;
+        }
+        const elo = Math.max(MIN_RATING, (player.elo ?? DEFAULT_ELO) - entry.eloDelta);
+        const mmr = Math.max(MIN_RATING, (player.mmr ?? DEFAULT_MMR) - entry.mmrDelta);
+        const levelPoints = Math.max(0, (player.levelPoints ?? 0) - entry.levelPointsDelta);
+        await tx.player.update({
+          where: { id: entry.playerId },
+          data: {
+            elo,
+            mmr,
+            levelPoints,
+            level: playerLevelFromPoints(levelPoints),
+            winStreak: entry.winStreakBefore,
+            bestWinStreak: entry.bestWinStreakBefore,
+            ...(entry.isWinner ? { wins: { decrement: 1 } } : { losses: { decrement: 1 } })
+          }
+        });
+        await this.reverseSeasonStats(tx, entry.playerId, entry.isWinner);
+      }
+
+      // Unwind progression: pull this match's winner/loser back out of their destination slots.
+      if (match.nextMatchId && match.nextSlot) {
+        await tx.bracketMatch.update({
+          where: { id: match.nextMatchId },
+          data: {
+            [match.nextSlot === BracketNextSlots.PLAYER1 ? "player1Id" : "player2Id"]: null,
+            status: BracketMatchStatuses.PENDING,
+            winnerId: null,
+            loserId: null
+          }
+        });
+      }
+      if (match.loserNextMatchId && match.loserNextSlot) {
+        await tx.bracketMatch.update({
+          where: { id: match.loserNextMatchId },
+          data: {
+            [match.loserNextSlot === BracketNextSlots.PLAYER1 ? "player1Id" : "player2Id"]: null,
+            status: BracketMatchStatuses.PENDING,
+            winnerId: null,
+            loserId: null
+          }
+        });
+      }
+
+      // Clear a staged grand-final reset when rolling back the first final.
+      if (resetSibling) {
+        await tx.bracketMatch.update({
+          where: { id: resetSibling.id },
+          data: {
+            player1Id: null,
+            player2Id: null,
+            status: BracketMatchStatuses.PENDING,
+            winnerId: null,
+            loserId: null,
+            isBye: false
+          }
+        });
+      }
+
+      await tx.bracketMatch.update({
+        where: { id },
+        data: {
+          winnerId: null,
+          loserId: null,
+          player1Score: null,
+          player2Score: null,
+          status: BracketMatchStatuses.READY,
+          resultMeta: Prisma.DbNull
+        }
+      });
+    });
+
+    await this.progressionService.resolveTournamentProgression(match.tournamentId);
+    await this.auditService.log({
+      actor,
+      action: "match.rollback",
+      entityType: "bracketMatch",
+      entityId: match.id,
+      metadata: { tournamentId: match.tournamentId }
+    });
+
+    return this.getMatchById(id);
+  }
+
+  /** Override a finished match result: roll back, then record the corrected result. */
+  async overrideMatchResult(id: string, input: UpdateBracketResultInput, actor: RequestUser) {
+    await this.rollbackMatch(id, actor);
+    return this.updateMatchResult(id, input, actor);
+  }
+
+  private async reverseSeasonStats(tx: Prisma.TransactionClient, playerId: string, wasWinner: boolean) {
+    if (!("season" in tx) || !("playerSeasonStats" in tx) || !tx.season?.findFirst || !tx.playerSeasonStats?.updateMany) {
+      return;
+    }
+    const season = await tx.season.findFirst({ where: { isActive: true }, orderBy: { startsAt: "desc" } });
+    if (!season) {
+      return;
+    }
+    await tx.playerSeasonStats.updateMany({
+      where: { seasonId: season.id, playerId },
+      data: {
+        wins: { decrement: wasWinner ? 1 : 0 },
+        losses: { decrement: wasWinner ? 0 : 1 },
+        points: { decrement: wasWinner ? 3 : 0 }
+      }
+    });
+  }
+
   async updateMatchStatus(id: string, input: UpdateBracketStatusInput, actor: RequestUser) {
     const match = await this.getMatchById(id);
     this.assertCanManageTournament(actor, match.tournament.organizerId);
@@ -316,6 +507,17 @@ export class BracketMatchesService {
       const elo = computeElo(winnerAvgElo, loserAvgElo, winnerAvgGames);
       const mmr = computeMmr(winnerAvgMmr, loserAvgMmr);
 
+      // Snapshot of applied changes so the result can be rolled back exactly.
+      const resultEntries: Array<{
+        playerId: string;
+        isWinner: boolean;
+        eloDelta: number;
+        mmrDelta: number;
+        levelPointsDelta: number;
+        winStreakBefore: number;
+        bestWinStreakBefore: number;
+      }> = [];
+
       for (const player of winners) {
         const nextPoints = player.levelPoints + 3;
         const streak = bumpWinStreak({ current: player.winStreak ?? 0, best: player.bestWinStreak ?? 0 });
@@ -335,6 +537,15 @@ export class BracketMatchesService {
         });
         await this.upsertRanking(tx, player.id, match.tournament.disciplineId, player.cityId, nextPoints);
         await this.upsertSeasonStats(tx, player.id, { isWinner: true, elo: newElo, mmr: newMmr });
+        resultEntries.push({
+          playerId: player.id,
+          isWinner: true,
+          eloDelta: newElo - (player.elo ?? DEFAULT_ELO),
+          mmrDelta: newMmr - (player.mmr ?? DEFAULT_MMR),
+          levelPointsDelta: 3,
+          winStreakBefore: player.winStreak ?? 0,
+          bestWinStreakBefore: player.bestWinStreak ?? 0
+        });
       }
 
       for (const player of losers) {
@@ -350,7 +561,21 @@ export class BracketMatchesService {
           }
         });
         await this.upsertSeasonStats(tx, player.id, { isWinner: false, elo: newElo, mmr: newMmr });
+        resultEntries.push({
+          playerId: player.id,
+          isWinner: false,
+          eloDelta: newElo - (player.elo ?? DEFAULT_ELO),
+          mmrDelta: newMmr - (player.mmr ?? DEFAULT_MMR),
+          levelPointsDelta: 0,
+          winStreakBefore: player.winStreak ?? 0,
+          bestWinStreakBefore: player.bestWinStreak ?? 0
+        });
       }
+
+      await tx.bracketMatch.update({
+        where: { id: match.id },
+        data: { resultMeta: { entries: resultEntries } as unknown as Prisma.InputJsonValue }
+      });
     });
   }
 

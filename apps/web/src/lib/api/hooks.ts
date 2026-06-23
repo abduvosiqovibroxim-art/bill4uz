@@ -16,6 +16,10 @@ import {
   deleteUserAdmin,
   addBracketParticipants,
   fetchBracketParticipants,
+  fetchTournamentStandings,
+  fetchTournamentDisputes,
+  resolveDispute,
+  disqualifyBracketParticipant,
   fetchClubBookingSlots,
   fetchClubBookings,
   fetchTournamentApplications,
@@ -33,6 +37,8 @@ import {
   fetchNews,
   fetchNewsItem,
   fetchPlayer,
+  fetchCoach,
+  fetchCoaches,
   fetchMyBookings,
   fetchPlayers,
   fetchRankings,
@@ -44,6 +50,8 @@ import {
   manualDrawTournament,
   moderateApplicationAdmin,
   removeBracketParticipant,
+  rollbackBracketMatch,
+  overrideBracketMatchResult,
   updateBracketMatchResult,
   updateBracketMatchStatus,
   updateClubAdmin,
@@ -66,6 +74,25 @@ export function usePlayerQuery(id: string) {
   return useQuery({
     queryKey: queryKeys.players.detail(id),
     queryFn: () => fetchPlayer(id),
+    enabled: Boolean(id),
+    // Cache the profile so reopening it (or returning to the bracket) is instant
+    // and does not trigger a refetch.
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
+  });
+}
+
+export function useCoachesQuery() {
+  return useQuery({
+    queryKey: queryKeys.coaches.list(),
+    queryFn: fetchCoaches
+  });
+}
+
+export function useCoachQuery(id: string) {
+  return useQuery({
+    queryKey: queryKeys.coaches.detail(id),
+    queryFn: () => fetchCoach(id),
     enabled: Boolean(id)
   });
 }
@@ -210,6 +237,44 @@ export function useBracketParticipantsQuery(tournamentId: string) {
     queryKey: queryKeys.brackets.participants(tournamentId),
     queryFn: () => fetchBracketParticipants(tournamentId),
     enabled: Boolean(tournamentId)
+  });
+}
+
+export function useTournamentStandingsQuery(tournamentId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.brackets.standings(tournamentId),
+    queryFn: () => fetchTournamentStandings(tournamentId),
+    enabled: Boolean(tournamentId) && enabled
+  });
+}
+
+export function useTournamentDisputesQuery(tournamentId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.brackets.disputes(tournamentId),
+    queryFn: () => fetchTournamentDisputes(tournamentId),
+    enabled: Boolean(tournamentId) && enabled
+  });
+}
+
+export function useResolveDisputeMutation(tournamentId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ disputeId, status, resolution }: { disputeId: string; status: "UPHELD" | "REJECTED"; resolution?: string }) =>
+      resolveDispute(disputeId, { status, resolution }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.brackets.disputes(tournamentId) });
+    }
+  });
+}
+
+export function useDisqualifyParticipantMutation(tournamentId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (participantId: string) => disqualifyBracketParticipant(tournamentId, participantId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.tournaments.detail(tournamentId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.brackets.participants(tournamentId) });
+    }
   });
 }
 
@@ -589,6 +654,36 @@ export function useUpdateBracketMatchResultMutation(tournamentId: string) {
       matchId: string;
       input: { winnerId: string; player1Score?: number; player2Score?: number };
     }) => updateBracketMatchResult(matchId, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.tournaments.detail(tournamentId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.tournaments.all });
+    }
+  });
+}
+
+export function useRollbackBracketMatchMutation(tournamentId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (matchId: string) => rollbackBracketMatch(matchId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.tournaments.detail(tournamentId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.tournaments.all });
+    }
+  });
+}
+
+export function useOverrideBracketMatchResultMutation(tournamentId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      matchId,
+      input
+    }: {
+      matchId: string;
+      input: { winnerId: string; player1Score?: number; player2Score?: number };
+    }) => overrideBracketMatchResult(matchId, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.tournaments.detail(tournamentId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.tournaments.all });

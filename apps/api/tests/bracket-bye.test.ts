@@ -7,7 +7,9 @@ import { BracketFormats, BracketMatchBlueprint, BracketMatchStatuses } from "../
 import {
   buildDoubleEliminationBlueprints,
   buildMatchBlueprints,
-  buildRoundRobinBlueprints
+  buildRoundRobinBlueprints,
+  getLowerRoundCount,
+  lowerRoundPlaceRange
 } from "../src/brackets/bracket.utils";
 
 type MatchRecord = BracketMatchBlueprint & {
@@ -556,21 +558,30 @@ async function testDoubleEliminationBlueprint() {
   const lower = matches.filter((match) => match.phase === "LOWER");
   const final = matches.filter((match) => match.phase === "FINAL");
 
-  // N=8: winners bracket 7, losers bracket N-2=6, grand final 1 -> total 2N-2=14.
-  assert.equal(matches.length, 14);
+  // N=8: winners bracket 7, losers bracket N-2=6, grand final 1, bronze 1, reset 1 -> 16.
+  assert.equal(matches.length, 16);
   assert.equal(upper.length, 7);
   assert.equal(lower.length, 6);
-  assert.equal(final.length, 1);
+  assert.equal(final.length, 3);
   // Every winners-bracket match drops its loser into the losers bracket.
   assert.equal(upper.every((match) => Boolean(match.loserNextMatchId)), true);
-  // Double elimination has no separate third-place match.
-  assert.equal(matches.some((match) => match.isThirdPlace), false);
+  // Double elimination now has a dedicated 3rd-place match and a grand-final reset.
+  const bronze = matches.find((match) => match.isThirdPlace);
+  const reset = matches.find((match) => match.isFinalReset);
+  assert.ok(bronze, "bronze (3rd place) match should be generated");
+  assert.ok(reset, "grand-final reset match should be generated");
+  // Bronze is fed by the losers of the last two losers-bracket rounds.
+  const bronzeFeeders = matches.filter((match) => match.loserNextMatchId === bronze!.id);
+  assert.equal(bronzeFeeders.length, 2);
+  assert.equal(bronzeFeeders.every((match) => match.phase === "LOWER"), true);
   // Grand final is fed by the winners-bracket final and the losers-bracket final.
-  const grandFinal = final[0];
+  const grandFinal = final.find((match) => !match.isThirdPlace && !match.isFinalReset)!;
   const feeders = matches.filter((match) => match.nextMatchId === grandFinal.id);
   assert.equal(feeders.length, 2);
   assert.equal(feeders.some((match) => match.phase === "UPPER"), true);
   assert.equal(feeders.some((match) => match.phase === "LOWER"), true);
+  // The reset match carries no incoming links; it is staged on demand by progression.
+  assert.equal(matches.some((match) => match.nextMatchId === reset!.id), false);
 }
 
 async function testDoubleEliminationFourPlayers() {
@@ -624,12 +635,108 @@ async function testDoubleEliminationFourPlayers() {
     );
   }
 
-  const grandFinal = prisma.bracketMatches.find((match) => match.phase === "FINAL");
+  // The upper-bracket player wins the first final, so no reset is played.
+  const grandFinal = prisma.bracketMatches.find(
+    (match) => match.phase === "FINAL" && !match.isThirdPlace && !match.isFinalReset
+  );
   assert.ok(grandFinal, "grand final should exist");
   assert.equal(grandFinal!.status, BracketMatchStatuses.FINISHED);
   assert.ok(grandFinal!.winnerId, "grand final should have a winner");
-  assert.equal(prisma.bracketMatches.filter((match) => match.status === "PENDING").length, 0);
+  // The reset stays empty/pending; everything else is resolved.
+  const reset = prisma.bracketMatches.find((match) => match.isFinalReset);
+  assert.ok(reset, "reset match should exist");
+  assert.equal(Boolean(reset!.player1Id), false);
+  assert.equal(
+    prisma.bracketMatches.filter((match) => match.status === "PENDING" && !match.isFinalReset).length,
+    0
+  );
   assert.equal(prisma.tournamentState.status, TournamentStatus.FINISHED);
+}
+
+async function testDoubleEliminationReset() {
+  const prisma = new InMemoryPrismaService();
+  prisma.tournamentState = {
+    id: "t-de-reset",
+    status: TournamentStatus.LIVE,
+    bracketSize: 4,
+    bracketFormat: BracketFormats.DOUBLE_ELIMINATION,
+    startsAt: new Date("2026-03-31T12:00:00.000Z"),
+    club: { tables: 2 }
+  };
+  prisma.bracketMatches = buildDoubleEliminationBlueprints("t-de-reset", 4, createSeeds(4), {
+    startsAt: prisma.tournamentState.startsAt,
+    tableCount: 2
+  });
+  for (let index = 1; index <= 4; index += 1) {
+    prisma.players.set(`player-${index}`, {
+      id: `player-${index}`,
+      levelPoints: 0,
+      level: "NOVICE",
+      wins: 0,
+      losses: 0,
+      tournamentWins: 0
+    });
+  }
+
+  const progressionService = new BracketMatchProgressionService(prisma as never);
+  const service = new BracketMatchesService(
+    prisma as never,
+    progressionService,
+    new StubNotificationsService() as never,
+    new StubAuditService() as never
+  );
+  const actor = { sub: "organizer-1", email: "o@e.com", role: "ORGANIZER", type: "access" as const };
+
+  await progressionService.resolveTournamentProgression("t-de-reset");
+
+  let resetBecameReady = false;
+  for (let guard = 0; guard < 40; guard += 1) {
+    const ready = prisma.bracketMatches.find(
+      (match) => match.status === BracketMatchStatuses.READY && match.player1Id && match.player2Id
+    );
+    if (!ready) {
+      break;
+    }
+    if (ready.isFinalReset) {
+      resetBecameReady = true;
+    }
+    // The lower-bracket player (player2 slot) wins the first grand final to force a reset.
+    const isFirstFinal = ready.phase === "FINAL" && !ready.isThirdPlace && !ready.isFinalReset;
+    const winnerId = isFirstFinal ? ready.player2Id! : ready.player1Id!;
+    await service.updateMatchResult(
+      ready.id,
+      {
+        winnerId,
+        player1Score: isFirstFinal ? 1 : 3,
+        player2Score: isFirstFinal ? 3 : 1
+      },
+      actor as never
+    );
+  }
+
+  const reset = prisma.bracketMatches.find((match) => match.isFinalReset);
+  assert.ok(reset, "reset match should exist");
+  assert.equal(resetBecameReady, true, "reset should become playable after the lower player wins the first final");
+  assert.equal(reset!.status, BracketMatchStatuses.FINISHED);
+  assert.ok(reset!.player1Id && reset!.player2Id, "reset should be populated with both finalists");
+  assert.ok(reset!.winnerId, "reset should decide the champion");
+  assert.equal(prisma.tournamentState.status, TournamentStatus.FINISHED);
+}
+
+function testLowerRoundPlaceRange() {
+  // N=8: 4 lower rounds. Earliest round decides the worst places; last two feed the bronze.
+  assert.equal(getLowerRoundCount(8), 4);
+  assert.equal(lowerRoundPlaceRange(8, 1), "7-8");
+  assert.equal(lowerRoundPlaceRange(8, 2), "5-6");
+  assert.equal(lowerRoundPlaceRange(8, 3), "3-4");
+  assert.equal(lowerRoundPlaceRange(8, 4), "3-4");
+
+  // N=32: 8 lower rounds with the widest ranges first.
+  assert.equal(getLowerRoundCount(32), 8);
+  assert.equal(lowerRoundPlaceRange(32, 1), "25-32");
+  assert.equal(lowerRoundPlaceRange(32, 2), "17-24");
+  assert.equal(lowerRoundPlaceRange(32, 8), "3-4");
+  assert.equal(lowerRoundPlaceRange(32, 99), null);
 }
 
 function testRoundRobinBlueprint() {
@@ -714,6 +821,8 @@ async function main() {
   await testRoundRobinFinishes();
   await testDoubleEliminationBlueprint();
   await testDoubleEliminationFourPlayers();
+  await testDoubleEliminationReset();
+  testLowerRoundPlaceRange();
   await testTenPlayersInSixteenBracket();
   await testTwoPlayersInSixteenBracket();
   await testOneParticipantValidation();

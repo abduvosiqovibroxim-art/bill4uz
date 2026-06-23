@@ -6,7 +6,8 @@ import { RankingTable } from "@/components/RankingTable";
 import { SectionHeader } from "@/components/SectionHeader";
 import { FormInput, FormSelect, SectionShell, SurfaceCard } from "@/components/ui";
 import { useRankingsQuery } from "@/lib/api/hooks";
-import { tournamentDisciplines, uzbekCities } from "@/lib/constants";
+import { uzbekCities } from "@/lib/constants";
+import { disciplineOptions } from "@/lib/tournamentTaxonomy";
 import { useI18n } from "@/lib/i18n";
 
 export default function RankingsPage() {
@@ -37,28 +38,27 @@ export default function RankingsPage() {
     });
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
-      {/* Header */}
-      <section className="container-shell py-8">
-        <div className="mb-4">
-          <span className="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded-full" style={{ background: "var(--emerald)", color: "var(--bg)" }}>
-            {t("nav.rankings")}
-          </span>
+    <div className="portal-wrap">
+      <div className="portal">
+      {/* Compact hero */}
+      <section className="portal-hero portal-hero-solo" style={{ padding: "clamp(1.2rem, 3vw, 2rem)" }}>
+        <div className="portal-hero-copy">
+          <span className="portal-eyebrow">{t("nav.rankings")}</span>
+          <h1 className="portal-hero-title" style={{ fontSize: "clamp(1.8rem, 1.2rem + 2.4vw, 2.6rem)" }}>{t("rankings.title")}</h1>
+          <p className="portal-hero-lead">{t("rankings.subtitle")}</p>
         </div>
-        <h1 className="text-4xl font-black mb-2" style={{ color: "var(--text)" }}>{t("rankings.title")}</h1>
-        <p className="text-lg" style={{ color: "var(--muted)" }}>{t("rankings.subtitle")}</p>
       </section>
 
       {/* Filters */}
-      <section className="container-shell pb-6">
-        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-3 p-6 rounded-lg" style={{ background: "var(--surface)", border: "1px solid var(--card-border)" }}>
+      <section>
+        <div className="portal-panel grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <label className="space-y-1">
             <span className="text-xs font-semibold uppercase" style={{ color: "var(--muted)" }}>{locale === "ru" ? "Дисциплина" : locale === "uz" ? "Yo'nalish" : "Discipline"}</span>
             <select className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: "var(--surface-strong)", border: "1px solid var(--card-border)", color: "var(--text)" }} value={discipline} onChange={(event) => setDiscipline(event.target.value)}>
               <option value="overall">{t("rankings.disciplinesAll")}</option>
-              {tournamentDisciplines.map((item) => (
-                <option key={item} value={item}>
-                  {t(`common.disciplines.${item}`)}
+              {disciplineOptions.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label[locale]}
                 </option>
               ))}
             </select>
@@ -113,18 +113,17 @@ export default function RankingsPage() {
       </section>
 
       {/* Content */}
-      <section className="container-shell pb-12">
+      <section>
         {rankingsQuery.isPending ? <LoadingState /> : null}
         {rankingsQuery.isError ? <ErrorState onRetry={() => rankingsQuery.refetch()} /> : null}
         {!rankingsQuery.isPending && !rankingsQuery.isError && rankings.length === 0 ? (
-          <div className="text-center p-12 rounded-lg" style={{ background: "var(--surface)", border: "1px solid var(--card-border)" }}>
-            <p className="text-lg" style={{ color: "var(--muted)" }}>{emptyCopy(locale)}</p>
-          </div>
+          <EmptyState icon="★" title={emptyCopy(locale)} />
         ) : null}
         {!rankingsQuery.isPending && !rankingsQuery.isError && rankings.length > 0 ? (
           <RankingTable entries={rankings} />
         ) : null}
       </section>
+      </div>
     </div>
   );
 }

@@ -41,12 +41,14 @@ export class NotificationsService {
   }
 
   async getPendingTelegramNotifications(limit = 50) {
+    // Deliver ALL undelivered notifications (results, disputes, completion, reminders, bookings)
+    // to linked Telegram users — not just reminders. The recency window prevents a backlog
+    // of old undelivered notifications from flooding users after this is enabled.
+    const recencyWindow = new Date(Date.now() - 24 * 60 * 60 * 1000);
     return this.prisma.notification.findMany({
       where: {
         telegramDeliveredAt: null,
-        eventKey: {
-          startsWith: "tournament_reminder_2h:"
-        },
+        createdAt: { gte: recencyWindow },
         user: {
           telegramId: {
             not: null
@@ -190,6 +192,53 @@ export class NotificationsService {
         eventKey: `match-result:${match.id}:${userId}`
       });
     }
+  }
+
+  async notifyDisputeFiled(disputeId: string) {
+    const dispute = await this.prisma.matchDispute.findUnique({
+      where: { id: disputeId },
+      include: {
+        match: {
+          select: {
+            matchNumber: true,
+            tournament: { select: { title: true, organizerId: true } }
+          }
+        }
+      }
+    });
+
+    const organizerId = dispute?.match.tournament.organizerId;
+    if (!dispute || !organizerId) {
+      return;
+    }
+
+    await this.create(
+      organizerId,
+      `Жалоба на результат матча №${dispute.match.matchNumber} турнира "${dispute.match.tournament.title}". Требуется проверка.`,
+      { eventKey: `dispute-filed:${dispute.id}` }
+    );
+  }
+
+  async notifyDisputeResolved(disputeId: string) {
+    const dispute = await this.prisma.matchDispute.findUnique({
+      where: { id: disputeId },
+      include: {
+        match: { select: { matchNumber: true, tournament: { select: { title: true } } } }
+      }
+    });
+
+    if (!dispute) {
+      return;
+    }
+
+    const label = dispute.status === "UPHELD" ? "удовлетворена" : "отклонена";
+    const comment = dispute.resolution ? ` Комментарий: ${dispute.resolution}` : "";
+
+    await this.create(
+      dispute.filedByUserId,
+      `Ваша жалоба по матчу №${dispute.match.matchNumber} турнира "${dispute.match.tournament.title}" ${label}.${comment}`,
+      { eventKey: `dispute-resolved:${dispute.id}:${dispute.status}` }
+    );
   }
 
   async notifyTournamentCompletion(tournamentId: string) {

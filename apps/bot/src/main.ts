@@ -1,7 +1,7 @@
 import { createServer } from "http";
 import { Bot, GrammyError, InlineKeyboard, Keyboard, session, webhookCallback } from "grammy";
 import type { Context, SessionFlavor } from "grammy";
-import { BotApiError, botApiFetch, toBotErrorMessage } from "./api";
+import { BotApiError, botApiFetch, publicApiFetch, toBotErrorMessage } from "./api";
 import { validateProductionEnv } from "./production-env";
 import type { BotSessionData } from "./types";
 
@@ -323,6 +323,83 @@ bot.callbackQuery("my_tournaments", async (ctx) => {
 bot.callbackQuery("my_matches", async (ctx) => {
   await ctx.answerCallbackQuery();
   await sendMyMatches(ctx);
+});
+
+bot.callbackQuery(/^standings:([^:]+)$/, async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const tournamentId = ctx.match[1];
+
+  try {
+    const data = await publicApiFetch<{
+      finished: boolean;
+      standings: Array<{ position: number; name: string; wins: number; losses: number; points: number; scoreDiff: number }>;
+    }>(`/tournaments/${tournamentId}/standings`);
+
+    if (!data.standings?.length) {
+      await ctx.reply("Таблица пока пуста — результатов ещё нет.");
+      return;
+    }
+
+    const header = data.finished ? "🏆 Итоговая таблица" : "📊 Турнирная таблица";
+    const lines = data.standings
+      .slice(0, 32)
+      .map((row) => `${row.position}. ${row.name} — ${row.points} очк. (${row.wins}-${row.losses})`);
+
+    await ctx.reply([header, "", ...lines].join("\n"));
+  } catch (error) {
+    await ctx.reply(toBotErrorMessage(error));
+  }
+});
+
+bot.callbackQuery(/^report:([^:]+)$/, async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const tournamentId = ctx.match[1];
+
+  try {
+    const data = await botApiFetch<{
+      title: string;
+      matches: Array<{
+        matchId: string;
+        matchNumber: number;
+        playerA: { participantId: string; name: string };
+        playerB: { participantId: string; name: string };
+      }>;
+    }>(`/bot/internal/tournaments/${tournamentId}/reportable-matches?telegramId=${requireTelegramId(ctx)}`);
+
+    if (!data.matches.length) {
+      await ctx.reply("Нет матчей, готовых к вводу результата.");
+      return;
+    }
+
+    for (const match of data.matches) {
+      const keyboard = new InlineKeyboard()
+        .text(`✅ ${match.playerA.name}`, `rwin:${match.matchId}:${match.playerA.participantId}`)
+        .row()
+        .text(`✅ ${match.playerB.name}`, `rwin:${match.matchId}:${match.playerB.participantId}`);
+      await ctx.reply(`Матч #${match.matchNumber}: ${match.playerA.name} vs ${match.playerB.name}\nКто победил?`, {
+        reply_markup: keyboard
+      });
+    }
+  } catch (error) {
+    await ctx.reply(toBotErrorMessage(error));
+  }
+});
+
+bot.callbackQuery(/^rwin:([^:]+):([^:]+)$/, async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const matchId = ctx.match[1];
+  const winnerParticipantId = ctx.match[2];
+
+  try {
+    await botApiFetch(`/bot/internal/matches/${matchId}/report-result`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ telegramId: requireTelegramId(ctx), winnerParticipantId })
+    });
+    await ctx.reply("✅ Результат записан. Сетка обновлена.");
+  } catch (error) {
+    await ctx.reply(toBotErrorMessage(error));
+  }
 });
 
 bot.callbackQuery("match_invite:start", async (ctx) => {
@@ -764,6 +841,7 @@ async function sendUpcomingTournaments(ctx: BotContext) {
     if (tournament.canJoinInBot) {
       keyboard.text(t(language, "participate"), `join:${tournament.id}`).row();
     }
+    keyboard.text("📊 Таблица", `standings:${tournament.id}`).text("✍️ Результат", `report:${tournament.id}`).row();
     if (isTelegramSafeUrl(tournament.siteUrl)) {
       keyboard.url(t(language, "openTournament"), tournament.siteUrl);
     }
@@ -785,7 +863,13 @@ async function sendMyTournaments(ctx: BotContext) {
     }
 
     for (const tournament of tournaments) {
-      const keyboard = tournamentUrlKeyboard(t(language, "openTournament"), tournament.siteUrl);
+      const keyboard = new InlineKeyboard()
+        .text("📊 Таблица", `standings:${tournament.id}`)
+        .text("✍️ Результат", `report:${tournament.id}`)
+        .row();
+      if (isTelegramSafeUrl(tournament.siteUrl)) {
+        keyboard.url(t(language, "openTournament"), tournament.siteUrl);
+      }
       await ctx.reply(renderMyTournament(tournament), {
         reply_markup: keyboard
       });
@@ -1093,7 +1177,8 @@ function formatDateTime(value: string) {
 }
 
 function extractReminderTournamentId(eventKey?: string | null) {
-  const match = eventKey?.match(/^tournament_reminder_2h:([^:]+):/);
+  // Event keys that carry a tournament id as the first segment after the prefix.
+  const match = eventKey?.match(/^(?:tournament_reminder_2h|tournament-finished|tournament-champion):([^:]+)/);
   return match?.[1] ?? null;
 }
 

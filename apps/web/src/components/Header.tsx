@@ -14,6 +14,8 @@ const headerCopy: Record<
     signIn: string;
     signOut: string;
     tournaments: string;
+    players: string;
+    coaches: string;
     rating: string;
     booking: string;
     navLabel: string;
@@ -24,6 +26,8 @@ const headerCopy: Record<
     signIn: "Войти",
     signOut: "Выйти",
     tournaments: "Турниры",
+    players: "Игроки",
+    coaches: "Тренеры",
     rating: "Рейтинг",
     booking: "Забронировать",
     navLabel: "Основная навигация"
@@ -33,6 +37,8 @@ const headerCopy: Record<
     signIn: "Kirish",
     signOut: "Chiqish",
     tournaments: "Turnirlar",
+    players: "O'yinchilar",
+    coaches: "Murabbiylar",
     rating: "Reyting",
     booking: "Bron qilish",
     navLabel: "Asosiy navigatsiya"
@@ -42,13 +48,15 @@ const headerCopy: Record<
     signIn: "Sign in",
     signOut: "Log out",
     tournaments: "Tournaments",
+    players: "Players",
+    coaches: "Coaches",
     rating: "Rating",
     booking: "Book",
     navLabel: "Primary navigation"
   }
 };
 
-type HeaderNavKey = "tournaments" | "rating" | "booking";
+type HeaderNavKey = "tournaments" | "players" | "coaches" | "rating" | "booking";
 
 type HeaderNavItem = {
   href: string;
@@ -64,6 +72,10 @@ function isNavActivePath(pathname: string, key: HeaderNavKey) {
   switch (key) {
     case "tournaments":
       return pathname === "/tournaments" || pathname.startsWith("/tournaments/");
+    case "players":
+      return pathname === "/players" || pathname.startsWith("/players/");
+    case "coaches":
+      return pathname === "/coaches" || pathname.startsWith("/coaches/");
     case "rating":
       return pathname === "/rating" || pathname === "/rankings";
     case "booking":
@@ -82,6 +94,8 @@ export function Header() {
   const profileHref = isAuthenticated && user ? dashboardPathForRole(user.role) : "/auth/signin";
   const navItems: HeaderNavItem[] = [
     { href: "/tournaments", key: "tournaments", label: c.tournaments },
+    { href: "/players", key: "players", label: c.players },
+    { href: "/coaches", key: "coaches", label: c.coaches },
     { href: "/rating", key: "rating", label: c.rating },
     { href: "/booking", key: "booking", label: c.booking }
   ];

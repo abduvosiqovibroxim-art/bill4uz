@@ -11,6 +11,8 @@
   ClubTable,
   ClubPreview,
   ClubTournamentSummary,
+  Coach,
+  CoachDetail,
   CountryOption,
   DisciplineOption,
   LocalizedText,
@@ -40,6 +42,8 @@ import type {
   RawClubAvailability,
   RawClubTable,
   RawClubPreview,
+  RawCoach,
+  RawCoachDetail,
   RawCountry,
   RawDiscipline,
   RawGallery,
@@ -277,6 +281,10 @@ function adaptParticipant(raw: RawPlayer): Player {
     levelPoints: raw.levelPoints ?? 0,
     tournamentsPlayed: raw.tournamentsPlayed ?? 0,
     tournamentWins: raw.tournamentWins ?? 0,
+    mmr: raw.mmr ?? raw.elo,
+    winStreak: raw.winStreak ?? 0,
+    bestWinStreak: raw.bestWinStreak ?? 0,
+    winPercentage: typeof raw.winPercentage === "number" ? raw.winPercentage : winRatePct(raw.wins, raw.losses),
     currentLevel: playerLevelFrom(raw.currentLevel ?? raw.level),
     currentLevelLabel: localized(raw.currentLevelLabel, raw.currentLevel ?? raw.level ?? "NOVICE"),
     nextLevel: raw.nextLevel ? playerLevelFrom(raw.nextLevel) : null,
@@ -284,6 +292,7 @@ function adaptParticipant(raw: RawPlayer): Player {
     pointsToNextLevel: raw.pointsToNextLevel ?? 0,
     achievements: (raw.achievements ?? []).map((achievement) => localized(achievement)),
     bio: localizedOptional(raw.bio),
+    disciplines: raw.disciplines ?? [],
     club: clubPreview(raw.club)
   };
 }
@@ -300,6 +309,7 @@ export function adaptClub(raw: RawClub): Club {
     id: raw.id,
     userId: raw.userId ?? null,
     countryId: raw.countryId ?? raw.country?.id ?? null,
+    countryCode: raw.country?.code ? raw.country.code.toLowerCase() : null,
     cityId: raw.cityId ?? raw.city?.id ?? null,
     name: localized(raw.name),
     cityKey: raw.cityKey,
@@ -416,6 +426,10 @@ export function adaptPlayer(raw: RawPlayer): Player {
     levelPoints: raw.levelPoints ?? 0,
     tournamentsPlayed: raw.tournamentsPlayed ?? 0,
     tournamentWins: raw.tournamentWins ?? 0,
+    mmr: raw.mmr ?? raw.elo,
+    winStreak: raw.winStreak ?? 0,
+    bestWinStreak: raw.bestWinStreak ?? 0,
+    winPercentage: typeof raw.winPercentage === "number" ? raw.winPercentage : winRatePct(raw.wins, raw.losses),
     currentLevel: playerLevelFrom(raw.currentLevel ?? raw.level),
     currentLevelLabel: localized(raw.currentLevelLabel, raw.currentLevel ?? raw.level ?? "NOVICE"),
     nextLevel: raw.nextLevel ? playerLevelFrom(raw.nextLevel) : null,
@@ -423,7 +437,54 @@ export function adaptPlayer(raw: RawPlayer): Player {
     pointsToNextLevel: raw.pointsToNextLevel ?? 0,
     achievements: (raw.achievements ?? []).map((achievement) => localized(achievement)),
     bio: localizedOptional(raw.bio),
+    disciplines: raw.disciplines ?? [],
     club: clubPreview(raw.club)
+  };
+}
+
+export function adaptCoach(raw: RawCoach): Coach {
+  return {
+    id: raw.id,
+    fullName: raw.fullName,
+    photoUrl: raw.photoUrl ?? null,
+    region: raw.region ?? null,
+    cityId: raw.cityId,
+    cityName: raw.cityName ?? null,
+    countryId: raw.countryId,
+    countryName: raw.countryName ?? null,
+    clubId: raw.clubId ?? null,
+    clubName: raw.clubName ?? null,
+    qualification: raw.qualification,
+    specialization: raw.specialization,
+    disciplines: raw.disciplines ?? [],
+    experienceYears: raw.experienceYears ?? 0,
+    studentsCount: raw.studentsCount ?? 0,
+    personalPriceMinor: raw.personalPriceMinor ?? 0,
+    groupPriceMinor: raw.groupPriceMinor ?? 0,
+    bio: raw.bio ?? null,
+    rating: raw.rating ?? null
+  };
+}
+
+export function adaptCoachDetail(raw: RawCoachDetail): CoachDetail {
+  return {
+    ...adaptCoach(raw),
+    achievements: raw.achievements ?? [],
+    phone: raw.phone ?? null,
+    telegram: raw.telegram ?? null,
+    gallery: (raw.gallery ?? []).map((image) => ({ id: image.id, url: image.url })),
+    reviews: (raw.reviews ?? []).map((review) => ({
+      id: review.id,
+      authorName: review.authorName,
+      rating: review.rating,
+      text: review.text,
+      createdAt: review.createdAt
+    })),
+    students: (raw.students ?? []).map((student) => ({
+      id: student.id,
+      name: student.name,
+      achievement: student.achievement ?? null
+    }))
   };
 }
 
@@ -479,9 +540,26 @@ export function adaptTournamentDetail(raw: RawTournament): TournamentDetail {
 export function adaptPlayerDetail(raw: RawPlayer): PlayerDetail {
   return {
     ...adaptPlayer(raw),
+    worldRank: raw.worldRank ?? null,
+    recentMatches: (raw.recentMatches ?? []).map((match) => ({
+      id: match.id,
+      tournamentId: match.tournamentId,
+      tournamentTitle: match.tournamentTitle ?? null,
+      opponentId: match.opponentId ?? null,
+      opponentName: match.opponentName,
+      scoreFor: match.scoreFor ?? null,
+      scoreAgainst: match.scoreAgainst ?? null,
+      isWin: Boolean(match.isWin),
+      playedAt: match.playedAt ?? null
+    })),
     tournamentHistory: (raw.tournamentHistory ?? []).map(adaptTournament),
     applications: (raw.applications ?? []).map(adaptPlayerApplication)
   };
+}
+
+function winRatePct(wins: number, losses: number) {
+  const total = wins + losses;
+  return total > 0 ? Math.round((wins / total) * 1000) / 10 : 0;
 }
 
 function adaptPlayerApplication(raw: RawApplication): PlayerApplicationSummary {
@@ -619,6 +697,9 @@ function adaptTournamentMatch(raw: RawMatch): TournamentMatch {
     winnerId: raw.winnerId ?? null,
     winnerTo: raw.winnerTo ?? null,
     loserTo: raw.loserTo ?? null,
+    isThirdPlace: raw.isThirdPlace ?? false,
+    isFinalReset: raw.isFinalReset ?? false,
+    groupIndex: raw.groupIndex ?? null,
     playerA: raw.playerA ? adaptTournamentMatchPlayer(raw.playerA) : null,
     playerB: raw.playerB ? adaptTournamentMatchPlayer(raw.playerB) : null
   };
@@ -686,13 +767,18 @@ function adaptBracketRound(raw: RawBracketRound): TournamentBracketRound {
     label: roundLabel(raw.phase, raw.roundNumber, raw.label),
     phase: raw.phase as BracketPhase,
     roundNumber: raw.roundNumber,
-    matches: raw.matches.map(adaptTournamentMatch)
+    placeRange: raw.placeRange ?? null,
+    // The grand-final reset is only shown once it is actually staged (both players known).
+    matches: raw.matches
+      .filter((match) => !(match.isFinalReset && !match.playerA && !match.playerB))
+      .map(adaptTournamentMatch)
   };
 }
 
 function adaptTournamentResult(raw: RawTournamentResult): TournamentResultEntry {
   return {
     placement: raw.placement,
+    placeLabel: raw.placeLabel ?? String(raw.placement),
     label: raw.label,
     rating: raw.rating,
     player: adaptTournamentMatchPlayer(raw.player)

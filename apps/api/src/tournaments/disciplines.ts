@@ -11,7 +11,8 @@ export type TournamentDisciplineKey =
   | "pool9"
   | "pool10"
   | "pool141"
-  | "snooker";
+  | "snooker"
+  | "chineseBilliards";
 
 export const TOURNAMENT_DISCIPLINES: Array<{
   key: TournamentDisciplineKey;
@@ -51,7 +52,7 @@ export const TOURNAMENT_DISCIPLINES: Array<{
       en: "Combined pyramid"
     },
     billiardKind: "PYRAMID",
-    active: false
+    active: true
   },
   {
     key: "dynamicPyramid",
@@ -62,7 +63,7 @@ export const TOURNAMENT_DISCIPLINES: Array<{
       en: "Dynamic pyramid"
     },
     billiardKind: "PYRAMID",
-    active: false
+    active: true
   },
   {
     key: "moscowPyramid",
@@ -73,7 +74,7 @@ export const TOURNAMENT_DISCIPLINES: Array<{
       en: "Moscow pyramid"
     },
     billiardKind: "PYRAMID",
-    active: false
+    active: true
   },
   {
     key: "pool8",
@@ -84,7 +85,7 @@ export const TOURNAMENT_DISCIPLINES: Array<{
       en: "Pool-8"
     },
     billiardKind: "POOL",
-    active: false
+    active: true
   },
   {
     key: "pool9",
@@ -95,7 +96,7 @@ export const TOURNAMENT_DISCIPLINES: Array<{
       en: "Pool-9"
     },
     billiardKind: "POOL",
-    active: false
+    active: true
   },
   {
     key: "pool10",
@@ -106,7 +107,7 @@ export const TOURNAMENT_DISCIPLINES: Array<{
       en: "Pool-10"
     },
     billiardKind: "POOL",
-    active: false
+    active: true
   },
   {
     key: "pool141",
@@ -117,7 +118,7 @@ export const TOURNAMENT_DISCIPLINES: Array<{
       en: "14.1"
     },
     billiardKind: "POOL",
-    active: false
+    active: true
   },
   {
     key: "snooker",
@@ -128,7 +129,18 @@ export const TOURNAMENT_DISCIPLINES: Array<{
       en: "Snooker"
     },
     billiardKind: "SNOOKER",
-    active: false
+    active: true
+  },
+  {
+    key: "chineseBilliards",
+    name: "Китайский бильярд",
+    label: {
+      ru: "Китайский бильярд",
+      uz: "Xitoy bilyardi",
+      en: "Chinese billiards"
+    },
+    billiardKind: "POOL",
+    active: true
   }
 ];
 
@@ -167,7 +179,13 @@ const aliases = new Map<string, TournamentDisciplineKey>([
   ["141", "pool141"],
   ["14.1", "pool141"],
   ["snooker", "snooker"],
-  ["снукер", "snooker"]
+  ["снукер", "snooker"],
+  ["chinesebilliards", "chineseBilliards"],
+  ["chinese", "chineseBilliards"],
+  ["chinese8", "chineseBilliards"],
+  ["heyball", "chineseBilliards"],
+  ["китайскийбильярд", "chineseBilliards"],
+  ["xitoybilyardi", "chineseBilliards"]
 ]);
 
 export function getTournamentDisciplineByInput(

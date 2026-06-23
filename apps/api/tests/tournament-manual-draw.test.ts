@@ -101,8 +101,19 @@ const organizerActor = {
   type: "access" as const
 };
 
+class StubProgressionService {
+  async resolveTournamentProgression() {
+    /* no-op for manual draw tests */
+  }
+}
+
 function createService(prisma: ManualDrawPrismaService, generation: StubBracketGenerationService) {
-  return new BracketTournamentsService(prisma as never, generation as never, new StubAuditService() as never);
+  return new BracketTournamentsService(
+    prisma as never,
+    generation as never,
+    new StubProgressionService() as never,
+    new StubAuditService() as never
+  );
 }
 
 function createTournamentState(overrides: Partial<TournamentState> = {}): TournamentState {

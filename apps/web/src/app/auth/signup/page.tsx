@@ -118,10 +118,14 @@ export default function SignUpPage() {
   return (
     <div className="auth-screen">
       <div className="auth-card space-y-5">
-        <div className="space-y-2">
+        <div className="space-y-3">
+          <div className="auth-brand">
+            <span className="auth-brand-badge" aria-hidden="true">B</span>
+            <span className="auth-brand-word">Billuz</span>
+          </div>
           <p className="eyebrow">{t("auth.signupSimple.eyebrow")}</p>
-          <h1 className="section-title text-white">{t("auth.signupSimple.title")}</h1>
-          <p className="text-sm text-muted">{t("auth.signupSimple.subtitle")}</p>
+          <h1 className="section-title" style={{ color: "var(--color-text, var(--text))" }}>{t("auth.signupSimple.title")}</h1>
+          <p className="text-sm" style={{ color: "var(--color-muted, var(--muted))" }}>{t("auth.signupSimple.subtitle")}</p>
         </div>
 
         <form className="space-y-3" onSubmit={handleSubmit}>

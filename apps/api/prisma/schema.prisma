@@ -245,6 +245,7 @@ model Country {
   cities  City[]
   clubs   Club[]
   players Player[]
+  coaches Coach[]
 }
 
 model City {
@@ -255,6 +256,7 @@ model City {
   clubs     Club[]
   players   Player[]
   rankings  Ranking[]
+  coaches   Coach[]
 
   @@unique([countryId, name])
 }
@@ -373,6 +375,7 @@ model Club {
   tableSessions TableSession[]
   qrCodes      QRCode[]
   gallery      ClubImage[]
+  coaches      Coach[]
 
   @@index([deletedAt])
   @@index([source, sourceId])
@@ -394,6 +397,80 @@ model Discipline {
   name        String       @unique
   tournaments Tournament[]
   rankings    Ranking[]
+}
+
+enum CoachQualification {
+  INSTRUCTOR
+  MASTER
+  INTERNATIONAL_MASTER
+  HONORED_COACH
+}
+
+model Coach {
+  id                 String             @id @default(cuid())
+  fullName           String
+  photoUrl           String?
+  countryId          String
+  cityId             String
+  country            Country            @relation(fields: [countryId], references: [id])
+  city               City               @relation(fields: [cityId], references: [id])
+  region             String?
+  clubId             String?
+  club               Club?              @relation(fields: [clubId], references: [id])
+  qualification      CoachQualification
+  specialization     String
+  disciplines        String[]
+  experienceYears    Int                @default(0)
+  studentsCount      Int                @default(0)
+  personalPriceMinor Int                @default(0)
+  groupPriceMinor    Int                @default(0)
+  bio                String?            @db.Text
+  achievements       String[]
+  phone              String?
+  telegram           String?
+  rating             Float?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  gallery            CoachImage[]
+  reviews            CoachReview[]
+  students           CoachStudent[]
+
+  @@index([cityId])
+  @@index([qualification])
+}
+
+model CoachImage {
+  id        String   @id @default(cuid())
+  coachId   String
+  coach     Coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([coachId])
+}
+
+model CoachReview {
+  id         String   @id @default(cuid())
+  coachId    String
+  coach      Coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  authorName String
+  rating     Int      @default(5)
+  text       String   @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([coachId])
+}
+
+model CoachStudent {
+  id          String   @id @default(cuid())
+  coachId     String
+  coach       Coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  name        String
+  achievement String?
+  createdAt   DateTime @default(now())
+
+  @@index([coachId])
 }
 
 model Tournament {
@@ -488,7 +565,9 @@ model BracketMatch {
   bestOf        Int                @default(3)
   isBye         Boolean            @default(false)
   isThirdPlace  Boolean            @default(false)
+  isFinalReset  Boolean            @default(false)
   groupIndex    Int?
+  resultMeta    Json?
   nextMatchId   String?
   nextSlot      BracketNextSlot?
   loserNextMatchId String?

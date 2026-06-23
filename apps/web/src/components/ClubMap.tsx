@@ -23,6 +23,7 @@ export function ClubMap({ clubs, selectedClubId, onSelectClub, className, emptyM
   const mapRef = useRef<LeafletMap | null>(null);
   const leafletRef = useRef<LeafletModule | null>(null);
   const markersRef = useRef<LeafletMarker[]>([]);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const selectableClubs = useMemo(() => clubs.filter(hasClubCoordinates), [clubs]);
 
@@ -55,12 +56,22 @@ export function ClubMap({ clubs, selectedClubId, onSelectClub, className, emptyM
 
       mapRef.current = map;
       setMapReady(true);
+
+      // Leaflet measures the container when the map is created. In a sticky / late-sized
+      // container the measurement can be wrong, so only part of the tiles load and the rest
+      // stays grey. Recompute the size once laid out and on any later container resize.
+      requestAnimationFrame(() => map.invalidateSize());
+      const observer = new ResizeObserver(() => map.invalidateSize());
+      observer.observe(containerRef.current);
+      resizeObserverRef.current = observer;
     }
 
     void initMap();
 
     return () => {
       cancelled = true;
+      resizeObserverRef.current?.disconnect();
+      resizeObserverRef.current = null;
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
       mapRef.current?.remove();
@@ -84,10 +95,17 @@ export function ClubMap({ clubs, selectedClubId, onSelectClub, className, emptyM
       const marker = L.marker([resolveClubLatitude(club), resolveClubLongitude(club)], {
         icon: L.divIcon({
           className: `billuz-map-marker${isSelected ? " billuz-map-marker-selected" : ""}`,
-          html: `<span>${escapeHtml(club.name.ru || club.name.en || "Place")}</span>`,
+          html: "",
           iconSize: [16, 16],
           iconAnchor: [8, 8]
         })
+      });
+
+      // No permanent name label on the map (bill4you-style) — show the name only on hover.
+      marker.bindTooltip(escapeHtml(club.name.ru || club.name.en || "Place"), {
+        direction: "top",
+        offset: [0, -8],
+        opacity: 0.95
       });
 
       marker.on("click", () => {

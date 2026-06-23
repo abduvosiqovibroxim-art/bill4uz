@@ -68,7 +68,7 @@ function canAccessDashboardRole(request: NextRequest, actualRole: string | undef
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname === "/clubs" || pathname.startsWith("/clubs/")) {
+  if (pathname === "/clubs") {
     return NextResponse.redirect(new URL("/booking", request.url));
   }
 

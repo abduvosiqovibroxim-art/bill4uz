@@ -1,23 +1,39 @@
 "use client";
 
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { TournamentMatch } from "@/lib/types";
 
 export function MatchCard({
   match,
   onSelect,
-  isSelected
+  isSelected,
+  placeRange
 }: {
   match: TournamentMatch;
   onSelect?: (matchId: string) => void;
   isSelected?: boolean;
+  placeRange?: string | null;
 }) {
   const { locale, t } = useI18n();
   const statusTone = compactStatusTone(match.status);
-  const statusLabel = compactStatusLabel(match.status, locale);
   const hasAction = Boolean(onSelect);
-
   const rows = resolveRows(match, t("tournamentCenter.placeholders.tbd"));
+
+  const title = match.isThirdPlace
+    ? thirdPlaceLabel(locale)
+    : match.isFinalReset
+      ? finalResetLabel(locale)
+      : `#${match.matchNumber}`;
+
+  const metaLeft = [
+    typeof match.tableNumber === "number" ? `${tableLabel(locale)} ${match.tableNumber}` : null,
+    formatMeta(match.scheduledAt)
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const showFoot = Boolean(placeRange) || Boolean(match.loserTo);
 
   return (
     <article
@@ -32,38 +48,51 @@ export function MatchCard({
       role={hasAction ? "button" : undefined}
       tabIndex={hasAction ? 0 : undefined}
     >
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-          {t("tournamentCenter.bracket.match")} {match.matchNumber}
-        </p>
-        <span className={`bracket-status bracket-status-${statusTone}`}>{statusLabel}</span>
+      <div className="bm-head">
+        <span className="bm-meta" title={metaLeft}>{metaLeft}</span>
+        <span className="bm-num">{title}</span>
       </div>
-
-      <div className="mt-2 space-y-1.5">
+      <div className="bm-rows">
         {rows.map((row) => (
           <div
             key={row.key}
-            className={`bracket-player-row${row.isWinner ? " bracket-player-row-winner" : ""}${row.isBye ? " bracket-player-row-bye" : ""}`}
+            className={`bm-row${row.isWinner ? " bm-row-winner" : ""}${row.isBye ? " bm-row-bye" : ""}`}
             title={row.name}
           >
-            <span className="bracket-player-name">{row.name}</span>
-            {!row.isBye ? <span className="bracket-score">{row.score ?? "\u2014"}</span> : null}
+            {flagCode(row.countryKey) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                className="bm-flag"
+                src={`https://flagcdn.com/32x24/${flagCode(row.countryKey)}.png`}
+                alt=""
+                width={16}
+                height={12}
+                loading="lazy"
+              />
+            ) : (
+              <span className="bm-flag bm-flag-empty" aria-hidden="true" />
+            )}
+            {row.playerId && !row.isBye ? (
+              <Link
+                href={`/players/${row.playerId}`}
+                className="bm-name bm-name-link"
+                title={openProfileLabel(locale)}
+                aria-label={`${openProfileLabel(locale)}: ${row.name}`}
+                onClick={(event) => event.stopPropagation()}
+              >
+                {row.name}
+              </Link>
+            ) : (
+              <span className="bm-name">{row.name}</span>
+            )}
+            <span className="bm-score">{row.isBye ? "" : row.score ?? "—"}</span>
           </div>
         ))}
       </div>
-
-      {hasAction ? (
-        <div className="mt-2">
-          <button
-            type="button"
-            className="bracket-match-action"
-            onClick={(event) => {
-              event.stopPropagation();
-              onSelect?.(match.id);
-            }}
-          >
-            {resultActionLabel(locale)}
-          </button>
+      {showFoot ? (
+        <div className="bm-foot">
+          {placeRange ? <span className="bm-place">{placeLabel(locale)} {placeRange}</span> : <span />}
+          {match.loserTo ? <span className="bm-loser-inline">{loserToLabel(locale)} {match.loserTo}</span> : null}
         </div>
       ) : null}
     </article>
@@ -76,6 +105,9 @@ function resolveRows(match: TournamentMatch, emptyLabel: string) {
       {
         key: "playerA",
         name: match.playerA?.fullName ?? match.playerB?.fullName ?? emptyLabel,
+        playerId: match.playerA?.id ?? match.playerB?.id ?? null,
+        seed: match.playerA?.seed ?? match.playerB?.seed ?? null,
+        countryKey: match.playerA?.countryKey ?? match.playerB?.countryKey ?? null,
         score: null as number | null,
         isWinner: true,
         isBye: false
@@ -83,6 +115,9 @@ function resolveRows(match: TournamentMatch, emptyLabel: string) {
       {
         key: "playerB",
         name: "BYE",
+        playerId: null as string | null,
+        seed: null,
+        countryKey: null,
         score: null as number | null,
         isWinner: false,
         isBye: true
@@ -94,6 +129,9 @@ function resolveRows(match: TournamentMatch, emptyLabel: string) {
     {
       key: "playerA",
       name: match.playerA?.fullName ?? emptyLabel,
+      playerId: match.playerA?.id ?? null,
+      seed: match.playerA?.seed ?? null,
+      countryKey: match.playerA?.countryKey ?? null,
       score: match.scoreA,
       isWinner: Boolean(match.playerA?.id && match.winnerId === match.playerA.id),
       isBye: false
@@ -101,11 +139,31 @@ function resolveRows(match: TournamentMatch, emptyLabel: string) {
     {
       key: "playerB",
       name: match.playerB?.fullName ?? emptyLabel,
+      playerId: match.playerB?.id ?? null,
+      seed: match.playerB?.seed ?? null,
+      countryKey: match.playerB?.countryKey ?? null,
       score: match.scoreB,
       isWinner: Boolean(match.playerB?.id && match.winnerId === match.playerB.id),
       isBye: false
     }
   ] as const;
+}
+
+function flagCode(countryKey?: string | null) {
+  if (!countryKey) {
+    return "";
+  }
+  const code = countryKey.trim().toLowerCase().replace(/[^a-z]/g, "").slice(0, 2);
+  return code.length === 2 ? code : "";
+}
+
+function formatMeta(scheduledAt: string) {
+  const date = new Date(scheduledAt);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${String(date.getFullYear()).slice(2)} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 function compactStatusTone(status: TournamentMatch["status"]) {
@@ -124,39 +182,26 @@ function compactStatusTone(status: TournamentMatch["status"]) {
   return "ready";
 }
 
-function compactStatusLabel(status: TournamentMatch["status"], locale: "ru" | "uz" | "en") {
-  const labels = {
-    ru: {
-      pending: "\u041e\u0436\u0438\u0434\u0430\u0435\u0442",
-      ready: "\u0413\u043e\u0442\u043e\u0432",
-      live: "\u0418\u0434\u0451\u0442",
-      finished: "\u0417\u0430\u0432\u0435\u0440\u0448\u0451\u043d"
-    },
-    uz: {
-      pending: "Kutilmoqda",
-      ready: "Tayyor",
-      live: "Jarayonda",
-      finished: "Yakunlangan"
-    },
-    en: {
-      pending: "Pending",
-      ready: "Ready",
-      live: "Live",
-      finished: "Finished"
-    }
-  } as const;
-
-  return labels[locale][status];
+function tableLabel(locale: "ru" | "uz" | "en") {
+  return locale === "ru" ? "Стол" : locale === "uz" ? "Stol" : "Table";
 }
 
-function resultActionLabel(locale: "ru" | "uz" | "en") {
-  if (locale === "ru") {
-    return "\u0412\u043d\u0435\u0441\u0442\u0438 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442";
-  }
+function openProfileLabel(locale: "ru" | "uz" | "en") {
+  return locale === "ru" ? "Открыть профиль игрока" : locale === "uz" ? "O'yinchi profilini ochish" : "Open player profile";
+}
 
-  if (locale === "uz") {
-    return "Natijani kiritish";
-  }
+function placeLabel(locale: "ru" | "uz" | "en") {
+  return locale === "ru" ? "место" : locale === "uz" ? "o'rin" : "place";
+}
 
-  return "Enter result";
+function thirdPlaceLabel(locale: "ru" | "uz" | "en") {
+  return locale === "ru" ? "3-е место" : locale === "uz" ? "3-oʼrin" : "3rd place";
+}
+
+function finalResetLabel(locale: "ru" | "uz" | "en") {
+  return locale === "ru" ? "Реванш" : locale === "uz" ? "Revansh" : "Reset";
+}
+
+function loserToLabel(locale: "ru" | "uz" | "en") {
+  return locale === "ru" ? "проиграл на" : locale === "uz" ? "yutqazdi" : "lost at";
 }

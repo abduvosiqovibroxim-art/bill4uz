@@ -3,8 +3,8 @@ import type { Locale } from "./types";
 export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
   ru: {
     common: {
-      language: "����",
-      platformTag: "����������� ��������� ����������",
+      language: "Язык",
+      platformTag: "Премиальная турнирная экосистема",
       statuses: {
         draft: "\u0427\u0435\u0440\u043d\u043e\u0432\u0438\u043a",
         registration: "\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f",
@@ -12,195 +12,195 @@ export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
         finished: "\u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043d"
       },
       stats: {
-        points: "����"
+        points: "Очки"
       }
     },
     nav: {
-      home: "�������",
-      tournaments: "�������",
-      players: "������",
-      rankings: "��������",
-      clubs: "�����",
-      news: "�������",
-      media: "�����",
-      signin: "�����",
-      signup: "������� �������"
+      home: "Главная",
+      tournaments: "Турниры",
+      players: "Игроки",
+      rankings: "Рейтинги",
+      clubs: "Клубы",
+      news: "Новости",
+      media: "Медиа",
+      signin: "Войти",
+      signup: "Создать аккаунт"
     },
     forms: {
-      password: "������",
-      selectOption: "�������� ��������"
+      password: "Пароль",
+      selectOption: "Выберите вариант"
     },
     roles: {
-      player: "�����",
-      club: "����",
-      organizer: "�����������",
-      admin: "�������������"
+      player: "Игрок",
+      club: "Клуб",
+      organizer: "Организатор",
+      admin: "Администратор"
     },
     header: {
-      changePassword: "������",
-      logout: "�����"
+      changePassword: "Пароль",
+      logout: "Выйти"
     },
     auth: {
-      signinTitle: "����",
-      signupTitle: "�����������",
-      signinSubtitle: "������� � ���������� �������� � ������",
-      signupSubtitle: "�������� �������, ����� ����������� � ��������� ����������� �� �����",
-      identifierPlaceholder: "������� ��� Email",
-      passwordPlaceholder: "������",
-      signinAction: "�����",
-      orDivider: "���",
-      forgotLink: "������ ������?",
-      createAccountLink: "������� �������",
-      signInFailed: "�� ������� �����",
-      socialGoogle: "����� ����� Google",
-      socialApple: "����� ����� Apple",
-      socialFacebook: "����� ����� Facebook",
-      verifyTitle: "������������� email",
-      verifySubtitle: "���� ����� �� ����������� �������������, �������� ��� �������.",
-      verifyTokenPlaceholder: "����� �������������",
-      verifyAction: "����������� email",
-      verifyFailed: "�� ������� ����������� email",
-      forgotTitle: "�������������� �������",
-      forgotSubtitle: "������� email, � �� �������� ������ ��� ������ ������.",
-      forgotAction: "��������� ������",
-      forgotFailed: "�� ������� ��������� ������",
-      resetTitle: "����� ������",
-      resetSubtitle: "�������� ������ �� ������ � ������� ����� ������.",
-      resetTokenPlaceholder: "����� ������",
-      newPasswordPlaceholder: "����� ������",
-      confirmPasswordPlaceholder: "����������� ����� ������",
-      resetAction: "�������� ������",
-      resetFailed: "�� ������� �������� ������",
-      resetSuccess: "������ ��������. ������ ����� ����� � ����� �������.",
-      passwordsMismatch: "������ �� ���������",
-      backToSignin: "��������� �� �����",
-      signupFailed: "�� ������� ������������������",
-      forgotSent: "���� ������� ����������, ������ ��� ����������.",
-      signupEmailSent: "�� ��������� ������ �� ������� ��� ������������� email.",
-      changePasswordTitle: "����� ������",
-      changePasswordSubtitle: "����������� ������� ������, ����� ������ �����.",
-      currentPasswordPlaceholder: "������� ������",
-      changePasswordAction: "������� ������",
-      changePasswordFailed: "�� ������� �������� ������",
-      changePasswordSuccess: "������ ��������.",
+      signinTitle: "Вход",
+      signupTitle: "Регистрация",
+      signinSubtitle: "Доступ к турнирной и клубной экосистеме",
+      signupSubtitle: "Создайте профиль, чтобы участвовать и управлять активностью на сайте",
+      identifierPlaceholder: "Телефон или Email",
+      passwordPlaceholder: "Пароль",
+      signinAction: "Войти",
+      orDivider: "или",
+      forgotLink: "Забыли пароль?",
+      createAccountLink: "Создать аккаунт",
+      signInFailed: "Не удалось войти",
+      socialGoogle: "Войти через Google",
+      socialApple: "Войти через Apple",
+      socialFacebook: "Войти через Facebook",
+      verifyTitle: "Подтверждение email",
+      verifySubtitle: "Если токен не подставился автоматически, вставьте его вручную.",
+      verifyTokenPlaceholder: "Токен подтверждения",
+      verifyAction: "Подтвердить email",
+      verifyFailed: "Не удалось подтвердить email",
+      forgotTitle: "Восстановление доступа",
+      forgotSubtitle: "Введите email, и мы отправим ссылку для сброса пароля.",
+      forgotAction: "Отправить ссылку",
+      forgotFailed: "Не удалось отправить запрос",
+      resetTitle: "Сброс пароля",
+      resetSubtitle: "Откройте ссылку из письма и задайте новый пароль.",
+      resetTokenPlaceholder: "Токен сброса",
+      newPasswordPlaceholder: "Новый пароль",
+      confirmPasswordPlaceholder: "Подтвердите новый пароль",
+      resetAction: "Сбросить пароль",
+      resetFailed: "Не удалось сбросить пароль",
+      resetSuccess: "Пароль обновлен. Теперь можно войти с новым паролем.",
+      passwordsMismatch: "Пароли не совпадают",
+      backToSignin: "Вернуться ко входу",
+      signupFailed: "Не удалось зарегистрироваться",
+      forgotSent: "Если аккаунт существует, письмо уже отправлено.",
+      signupEmailSent: "Мы отправили ссылку для подтверждения email.",
+      changePasswordTitle: "Смена пароля",
+      changePasswordSubtitle: "Используйте текущий пароль, чтобы задать новый.",
+      currentPasswordPlaceholder: "Текущий пароль",
+      changePasswordAction: "Сменить пароль",
+      changePasswordFailed: "Не удалось обновить пароль",
+      changePasswordSuccess: "Пароль обновлен.",
       signupSimple: {
-        eyebrow: "�����������",
-        title: "������� �������",
-        subtitle: "������ ������� ������. ����� ����� ���� ��������� �����.",
-        firstNamePlaceholder: "���",
-        lastNamePlaceholder: "�������",
-        phonePlaceholder: "������� �����",
-        passwordPlaceholder: "������",
-        action: "������� �������",
-        signinLink: "��� ���� �������? �����",
-        failed: "�� ������� ������� �������"
+        eyebrow: "Регистрация",
+        title: "Создать аккаунт",
+        subtitle: "Только базовое. Сайт откроется сразу после входа.",
+        firstNamePlaceholder: "Имя",
+        lastNamePlaceholder: "Фамилия",
+        phonePlaceholder: "Номер телефона",
+        passwordPlaceholder: "Пароль",
+        action: "Создать аккаунт",
+        signinLink: "Уже есть аккаунт? Войти",
+        failed: "Не удалось создать аккаунт"
       }
     },
     rankings: {
-      sortByPoints: "���������� �� �����",
-      sortByWins: "���������� �� �������",
+      sortByPoints: "Сортировать по очкам",
+      sortByWins: "Сортировать по победам",
       headers: {
-        points: "����"
+        points: "Очки"
       }
     },
     admin: {
       nav: {
-        overview: "�����",
-        tournaments: "�������",
-        news: "�������",
-        clubs: "�����",
-        users: "������������",
-        applications: "������"
+        overview: "Обзор",
+        tournaments: "Турниры",
+        news: "Новости",
+        clubs: "Клубы",
+        users: "Пользователи",
+        applications: "Заявки"
       },
       overview: {
-        title: "�����-������",
-        subtitle: "���������� ���������� ��������� � ������� ���������.",
-        actionsTitle: "������� ����������",
-        news: "�������",
-        applications: "������"
+        title: "Панель администратора",
+        subtitle: "Управление сущностями платформы и модерация из единого слоя.",
+        actionsTitle: "Разделы управления",
+        news: "Новости",
+        applications: "Заявки"
       },
       actions: {
-        create: "�������",
-        save: "���������",
-        delete: "�������",
-        approve: "��������",
-        reject: "���������"
+        create: "Создать",
+        save: "Сохранить",
+        delete: "Удалить",
+        approve: "Одобрить",
+        reject: "Отклонить"
       },
       common: {
-        verified: "�����������",
-        allStatuses: "��� �������",
-        selectCountry: "�������� ������",
-        selectCity: "�������� �����",
-        selectClub: "�������� ����",
-        selectDiscipline: "�������� ����������"
+        verified: "Подтвержден",
+        allStatuses: "Все статусы",
+        selectCountry: "Выберите страну",
+        selectCity: "Выберите город",
+        selectClub: "Выберите клуб",
+        selectDiscipline: "Выберите дисциплину"
       },
       users: {
-        title: "������������",
-        subtitle: "�������� ���������, ���� � �����������.",
-        empty: "������������ �� �������.",
+        title: "Пользователи",
+        subtitle: "Создавайте аккаунты, назначайте роли и управляйте верификацией.",
+        empty: "Пользователи не найдены.",
         emailPlaceholder: "Email",
-        passwordPlaceholder: "������",
-        deleteConfirm: "������� ������������"
+        passwordPlaceholder: "Пароль",
+        deleteConfirm: "Удалить пользователя"
       },
       clubs: {
-        title: "�����",
-        subtitle: "������� ������, ������� � ���������� ������.",
-        empty: "����� �� �������.",
-        namePlaceholder: "�������� �����",
-        addressPlaceholder: "�����",
-        phonePlaceholder: "�������",
+        title: "Клубы",
+        subtitle: "Каталог клубов, расположение и контактные данные.",
+        empty: "Клубы не найдены.",
+        namePlaceholder: "Название клуба",
+        addressPlaceholder: "Адрес",
+        phonePlaceholder: "Телефон",
         telegramPlaceholder: "Telegram",
-        tablesPlaceholder: "���������� ������",
-        disciplinesPlaceholder: "���������� ����� �������",
-        latPlaceholder: "������",
-        lngPlaceholder: "�������",
-        descriptionPlaceholder: "�������� �����",
-        deleteConfirm: "������� ����"
+        tablesPlaceholder: "Количество столов",
+        disciplinesPlaceholder: "Дисциплины через запятую",
+        latPlaceholder: "Широта",
+        lngPlaceholder: "Долгота",
+        descriptionPlaceholder: "Описание клуба",
+        deleteConfirm: "Удалить клуб"
       },
       tournaments: {
-        title: "�������",
-        subtitle: "��������, ������� � ����������� ���������� ��������.",
-        empty: "������� �� �������.",
-        titlePlaceholder: "�������� �������",
-        startsAtPlaceholder: "���� � ����� ������",
-        prizePoolPlaceholder: "�������� ����",
-        participantsPlaceholder: "���������� ����������",
-        deleteConfirm: "������� ������"
+        title: "Турниры",
+        subtitle: "Создавайте турниры, обновляйте статусы и корректируйте записи.",
+        empty: "Турниры не найдены.",
+        titlePlaceholder: "Название турнира",
+        startsAtPlaceholder: "Дата и время начала",
+        prizePoolPlaceholder: "Призовой фонд",
+        participantsPlaceholder: "Количество участников",
+        deleteConfirm: "Удалить турнир"
       },
       news: {
-        title: "�������",
-        subtitle: "�������������� ���������� � ���������� ��������.",
-        empty: "������� �� �������.",
-        titlePlaceholder: "���������",
+        title: "Новости",
+        subtitle: "Редактирование публикаций и контентных карточек.",
+        empty: "Новости не найдены.",
+        titlePlaceholder: "Заголовок",
         slugPlaceholder: "Slug",
-        contentPlaceholder: "����� ����������",
-        publishedAtPlaceholder: "���� ����������",
-        deleteConfirm: "������� �������"
+        contentPlaceholder: "Текст публикации",
+        publishedAtPlaceholder: "Дата публикации",
+        deleteConfirm: "Удалить новость"
       },
       applications: {
-        title: "������",
-        subtitle: "��������� ������ ������� �� �������.",
-        empty: "������ �� �������.",
-        pending: "�� ������������",
-        approved: "��������",
-        rejected: "���������"
+        title: "Заявки",
+        subtitle: "Модерация заявок игроков на турниры.",
+        empty: "Заявки не найдены.",
+        pending: "На рассмотрении",
+        approved: "Одобрено",
+        rejected: "Отклонено"
       }
     },
     home: {
       sections: {
-        tournamentsSubtitle: "�����������, live � ����������� ������� � ����� ������ ����� �����.",
-        rankingsSubtitle: "������������ ������� �����, ���� � �������� �� ��������.",
-        playersSubtitle: "������, ����� � ������� ������� � ������ �������.",
-        clubsSubtitle: "������� ��������, ������, �������������� � ��������� ����������.",
-        newsSubtitle: "���������� ���������, ������, ���������� � ������� ��������.",
-        mediaSubtitle: "�������, �������� � �����-����� ��������."
+        tournamentsSubtitle: "Предстоящие, live и завершенные события собраны в одном потоке после входа.",
+        rankingsSubtitle: "Отслеживайте текущую форму, очки и движение по таблице.",
+        playersSubtitle: "Игроки, недавняя форма и быстрый доступ к каждой карточке профиля.",
+        clubsSubtitle: "Каталог площадок, адреса, инфраструктура и турнирная активность.",
+        newsSubtitle: "Обновления платформы, анонсы, результаты и контент событий.",
+        mediaSubtitle: "Галереи, хайлайты и медиа-архив турниров."
       }
     },
     account: {
-      defaultName: "�����",
-      noPhone: "������� �� ������",
-      closeLabel: "������� ���� ��������",
-      panelLabel: "������ ��������",
+      defaultName: "Игрок",
+      noPhone: "Телефон не указан",
+      closeLabel: "Закрыть меню аккаунта",
+      panelLabel: "Панель аккаунта",
       statuses: {
         draft: "\u0427\u0435\u0440\u043d\u043e\u0432\u0438\u043a",
         registration: "\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f",
@@ -208,21 +208,21 @@ export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
         finished: "\u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043d"
       },
       stats: {
-        tournaments: "��������",
-        wins: "�����",
-        winRate: "�������"
+        tournaments: "Турниры",
+        wins: "Победы",
+        winRate: "Winrate"
       },
-      history: "������� ��������",
-      upcoming: "��������� �������",
-      latestResults: "��������� ����������",
-      emptyHistory: "������� ���� �����",
-      emptyUpcoming: "��������� �������� ���� ���",
-      emptyResults: "����������� ���� ���",
+      history: "История турниров",
+      upcoming: "Предстоящие турниры",
+      latestResults: "Последние результаты",
+      emptyHistory: "История пока пуста",
+      emptyUpcoming: "Предстоящих турниров пока нет",
+      emptyResults: "Результатов пока нет",
       actions: {
-        profile: "�������",
-        history: "�������",
-        settings: "���������",
-        logout: "�����"
+        profile: "Профиль",
+        history: "История",
+        settings: "Настройки",
+        logout: "Выйти"
       }
     },
     tournamentCenter: {
@@ -620,6 +620,8 @@ export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
         winner: "G'olib",
         finalist: "Finalchi",
         semifinalist: "Yarim finalchi",
+        thirdPlace: "3-o'rin",
+        fourthPlace: "4-o'rin",
         participant: "Ishtirokchi"
       },
       participantStatuses: {
@@ -657,6 +659,9 @@ export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
         player2Score: "2-o'yinchi hisobi",
         statusSaved: "Status yangilandi.",
         resultSaved: "Natija saqlandi.",
+        rollback: "Natijani bekor qilish",
+        rollbackConfirm: "Match natijasi bekor qilinsinmi? Ishtirokchilar reytingi qayta hisoblanadi va match qayta ochiladi.",
+        rollbackDone: "Natija bekor qilindi.",
         champion: "Chempion",
         manage: "Boshqarish",
         myTournaments: "Mening turnirlarim",
@@ -1054,6 +1059,8 @@ export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
         winner: "Winner",
         finalist: "Finalist",
         semifinalist: "Semifinalist",
+        thirdPlace: "3rd place",
+        fourthPlace: "4th place",
         participant: "Participant"
       },
       participantStatuses: {
@@ -1091,6 +1098,9 @@ export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
         player2Score: "Player 2 score",
         statusSaved: "Status updated.",
         resultSaved: "Result saved.",
+        rollback: "Roll back result",
+        rollbackConfirm: "Roll back this match result? Participant ratings will be recalculated and the match will reopen for entry.",
+        rollbackDone: "Result rolled back.",
         champion: "Champion",
         manage: "Manage",
         myTournaments: "My tournaments",

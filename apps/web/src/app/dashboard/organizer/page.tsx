@@ -304,7 +304,9 @@ export default function OrganizerDashboardPage() {
   const participantModeSelectOptions = participantSelectionModeOptions.filter((option) => option.active);
   const playerLevelSelectOptions = playerLevelOptions.filter((option) => option.active);
   const formatOptions = tournamentFormatOptions.filter((option) => option.active);
-  const bracketTypeOptions = bracketSystemOptions.filter((option) => option.active);
+  // Show every bracket system, but keep the unsupported ones visible-yet-disabled
+  // ("— скоро" already baked into their labels). Only Single Elimination is active.
+  const bracketTypeOptions = bracketSystemOptions;
   const createValidationErrors = getCreateTournamentValidationErrors(form, c, participantMode, manualParticipants);
   const isSubmitting = createTournamentMutation.isPending || createManualDrawTournamentMutation.isPending;
   const canCreateTournament = createValidationErrors.length === 0 && clubs.length > 0 && !isSubmitting;
@@ -510,7 +512,7 @@ export default function OrganizerDashboardPage() {
                 onChange={(event) => setForm((current) => ({ ...current, bracketSystem: event.target.value as TournamentBracketSystemKey }))}
               >
                 {bracketTypeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
+                  <option key={option.value} value={option.value} disabled={!option.active}>
                     {option.label[locale]}
                   </option>
                 ))}
