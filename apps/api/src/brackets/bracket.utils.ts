@@ -10,7 +10,7 @@ import {
   BracketNextSlots
 } from "./bracket.types";
 
-export const SUPPORTED_BRACKET_SIZES = [4, 8, 16, 32, 64, 128] as const;
+export const SUPPORTED_BRACKET_SIZES = [2, 4, 8, 16, 32, 64, 128] as const;
 
 export function assertSupportedBracketSize(bracketSize: number | null | undefined) {
   if (!bracketSize || !SUPPORTED_BRACKET_SIZES.includes(bracketSize as (typeof SUPPORTED_BRACKET_SIZES)[number])) {

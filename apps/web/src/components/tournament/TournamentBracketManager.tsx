@@ -51,7 +51,7 @@ interface TournamentManagementForm {
   prizePool: string;
   participants: string;
   status: TournamentStatusValue;
-  bracketSize: "8" | "16" | "32" | "64";
+  bracketSize: "2" | "4" | "8" | "16" | "32" | "64";
   bracketFormat: TournamentFormatValue;
   regulationFormatRu: string;
   regulationFormatUz: string;
@@ -461,6 +461,8 @@ export function TournamentBracketManager({
             onChange={(event) => setForm((current) => current ? { ...current, bracketSize: event.target.value as TournamentManagementForm["bracketSize"] } : current)}
             disabled={structureLocked}
           >
+            <option value="2">2</option>
+            <option value="4">4</option>
             <option value="8">8</option>
             <option value="16">16</option>
             <option value="32">32</option>

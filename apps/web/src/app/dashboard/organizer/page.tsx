@@ -521,6 +521,8 @@ export default function OrganizerDashboardPage() {
 
             <TournamentFormField label={c.organizer.form.bracketSize} help={c.organizer.form.bracketSizeHelp}>
               <FormSelect value={form.bracketSize} onChange={(event) => setForm((current) => ({ ...current, bracketSize: event.target.value }))}>
+                <option value="2">2</option>
+                <option value="4">4</option>
                 <option value="8">8</option>
                 <option value="16">16</option>
                 <option value="32">32</option>
@@ -839,7 +841,7 @@ function getCreateTournamentValidationErrors(
     errors.push(copy.organizer.form.errors.prizePool);
   }
 
-  if (!["8", "16", "32", "64"].includes(form.bracketSize)) {
+  if (!["2", "4", "8", "16", "32", "64"].includes(form.bracketSize)) {
     errors.push(copy.organizer.form.errors.bracketSize);
   }
 

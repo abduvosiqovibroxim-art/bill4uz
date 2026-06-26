@@ -134,7 +134,7 @@ export class CreateTournamentDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  @IsIn([8, 16, 32, 64])
+  @IsIn([2, 4, 8, 16, 32, 64])
   bracketSize?: number;
 
   @IsOptional()
@@ -235,7 +235,7 @@ export class UpdateTournamentDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  @IsIn([8, 16, 32, 64])
+  @IsIn([2, 4, 8, 16, 32, 64])
   bracketSize?: number;
 
   @IsOptional()

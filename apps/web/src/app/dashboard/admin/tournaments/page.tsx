@@ -163,6 +163,8 @@ export default function AdminTournamentsPage() {
             <option value="FINISHED">{t("common.statuses.finished")}</option>
           </FormSelect>
           <FormSelect value={form.bracketSize} onChange={(event) => setForm((current) => ({ ...current, bracketSize: event.target.value }))}>
+            <option value="2">2</option>
+            <option value="4">4</option>
             <option value="8">8</option>
             <option value="16">16</option>
             <option value="32">32</option>
@@ -239,7 +241,7 @@ function getTournamentCreateErrors(
     errors.push(createTournamentError(locale, "prizePool"));
   }
 
-  if (!["8", "16", "32", "64"].includes(form.bracketSize)) {
+  if (!["2", "4", "8", "16", "32", "64"].includes(form.bracketSize)) {
     errors.push(createTournamentError(locale, "bracketSize"));
   }
 
@@ -316,6 +318,8 @@ function TournamentRow({
           onChange={(event) => setParticipants(event.target.value)}
         />
         <FormSelect value={bracketSize} onChange={(event) => setBracketSize(event.target.value)}>
+          <option value="2">2</option>
+          <option value="4">4</option>
           <option value="8">8</option>
           <option value="16">16</option>
           <option value="32">32</option>
