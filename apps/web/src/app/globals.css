@@ -5523,6 +5523,31 @@ textarea {
   flex: 0 0 auto;
 }
 
+/* Billuz brand logo (theme-aware): dark mark on light theme, light mark on dark theme. */
+.brand-logo {
+  display: block;
+  height: 30px;
+  width: auto;
+}
+
+.brand-logo-dark {
+  display: none;
+}
+
+html[data-theme="dark"] .brand-logo-light {
+  display: none;
+}
+
+html[data-theme="dark"] .brand-logo-dark {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .brand-logo {
+    height: 26px;
+  }
+}
+
 .site-nav {
   flex: 1 1 auto;
   display: flex;

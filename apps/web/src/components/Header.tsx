@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
@@ -110,8 +111,24 @@ export function Header() {
     <header className="topbar site-header">
       <div className="container-shell">
         <div className="site-header-inner">
-          <Link href="/" className="site-logo header-brand">
-            Billuz
+          <Link href="/" className="site-logo header-brand" aria-label="Billuz">
+            <Image
+              src="/brand/billuz-logo.png"
+              alt="Billuz"
+              width={507}
+              height={157}
+              priority
+              className="brand-logo brand-logo-light"
+            />
+            <Image
+              src="/brand/billuz-logo-dark.png"
+              alt=""
+              aria-hidden="true"
+              width={507}
+              height={157}
+              priority
+              className="brand-logo brand-logo-dark"
+            />
           </Link>
 
           <nav className="site-nav" aria-label={c.navLabel}>
