@@ -1,7 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Role } from "@prisma/client";
+import { hashPassword } from "../src/common/password";
 import { TOURNAMENT_DISCIPLINE_NAMES } from "../src/tournaments/disciplines";
 
 const prisma = new PrismaClient();
+
+const adminEmail = "admin@billuz.local";
+const adminPassword = "admin_t0la6an";
 
 const countries = [{ code: "UZ", name: "Uzbekistan" }] as const;
 
@@ -51,6 +55,14 @@ async function main() {
       create: { name }
     });
   }
+
+  // Platform admin account (access to /dashboard/admin). Idempotent by email.
+  const adminPasswordHash = await hashPassword(adminPassword);
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: { passwordHash: adminPasswordHash, role: Role.ADMIN, isVerified: true },
+    create: { email: adminEmail, passwordHash: adminPasswordHash, role: Role.ADMIN, isVerified: true }
+  });
 
   // Themed media galleries shown on /media. Each gallery holds distinct photos.
   // Cover = first asset url; first asset type drives the badge
@@ -140,7 +152,8 @@ async function main() {
         countries: await prisma.country.count(),
         cities: await prisma.city.count(),
         disciplines: await prisma.discipline.count(),
-        galleries: await prisma.gallery.count()
+        galleries: await prisma.gallery.count(),
+        admin: adminEmail
       },
       null,
       2
