@@ -11,6 +11,14 @@ const COACHES = [
     qualification: CoachQualification.INSTRUCTOR,
     cityName: "Tashkent",
     disciplines: ["Свободная пирамида"]
+  },
+  {
+    fullName: "Khudoyberdiyev Tolagan Elmurod o'g'li",
+    photoUrl: "/coaches/coach-khudoyberdiyev.webp",
+    specialization: "Мастер",
+    qualification: CoachQualification.MASTER,
+    cityName: "Tashkent",
+    disciplines: ["Русская пирамида", "Снукер"]
   }
 ] as const;
 
