@@ -7,10 +7,28 @@ services:
       POSTGRES_USER: billiard
       POSTGRES_PASSWORD: billiard
       POSTGRES_DB: billiard
+    # Continuous WAL archiving → enables point-in-time recovery (PITR).
+    # See ops/pg-backup/README.md.
+    command:
+      - "postgres"
+      - "-c"
+      - "hba_file=/etc/postgresql/pg_hba.conf"
+      - "-c"
+      - "wal_level=replica"
+      - "-c"
+      - "archive_mode=on"
+      - "-c"
+      - "archive_command=test ! -f /wal-archive/%f && cp %p /wal-archive/%f"
+      - "-c"
+      - "archive_timeout=60"
+      - "-c"
+      - "max_wal_senders=5"
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./ops/pg-backup/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - "${BACKUP_HOST_DIR:-D:/billuz-backups}/wal-archive:/wal-archive"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U billiard -d billiard"]
       interval: 5s
@@ -51,7 +69,9 @@ services:
       YANDEX_SEARCH_QUERY: ${YANDEX_SEARCH_QUERY:-бильярд Ташкент}
     ports:
       - "4000:4000"
-    restart: unless-stopped
+    # "no" (not unless-stopped): keep Docker Desktop from auto-reviving this
+    # container on launch, where it would shadow local `npm run dev` over IPv6.
+    restart: "no"
     volumes:
       - ./apps/api/.email-outbox:/app/apps/api/.email-outbox
     healthcheck:
@@ -74,7 +94,8 @@ services:
       INTERNAL_API_URL: http://api:4000/api
     ports:
       - "3000:3000"
-    restart: unless-stopped
+    # See api: avoid shadowing local dev over IPv6 after a Docker Desktop relaunch.
+    restart: "no"
 
   bot:
     build:
@@ -96,12 +117,36 @@ services:
       BOT_WEBHOOK_URL: ${BOT_WEBHOOK_URL:-}
     ports:
       - "4100:4100"
-    restart: unless-stopped
+    # See api: avoid shadowing local dev over IPv6 after a Docker Desktop relaunch.
+    restart: "no"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4100/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
       timeout: 5s
       retries: 20
+
+  # Backup sidecar: tiered pg_dump snapshots + daily pg_basebackup. See ops/pg-backup/.
+  backup:
+    image: postgres:16
+    container_name: billiard_backup
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      POSTGRES_USER: billiard
+      POSTGRES_PASSWORD: billiard
+      POSTGRES_DB: billiard
+      BACKUP_ROOT: /backups
+      MINUTELY_KEEP: "${MINUTELY_KEEP:-60}"
+      HOURLY_KEEP: "${HOURLY_KEEP:-48}"
+      DAILY_KEEP: "${DAILY_KEEP:-14}"
+      BASEBACKUP_KEEP: "${BASEBACKUP_KEEP:-7}"
+    entrypoint: ["bash", "/ops/pg-backup/scheduler.sh"]
+    volumes:
+      - ./ops/pg-backup:/ops/pg-backup:ro
+      - "${BACKUP_HOST_DIR:-D:/billuz-backups}:/backups"
 
 volumes:
   pgdata:

@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { ClubControlPanel } from "./ClubControlPanel";
 
 export default function ClubDashboardPage() {
-  redirect("/booking");
+  return <ClubControlPanel />;
 }

@@ -59,7 +59,8 @@ import {
   updateBookingStatus,
   updateNewsAdmin,
   updateTournamentAdmin,
-  updateUserAdmin
+  updateUserAdmin,
+  updateMyPlayerAvatar
 } from "./fetchers";
 import { queryKeys, type ApplicationListFilters, type BookingSlotsFilters, type ClubListFilters, type TournamentListFilters } from "./queryKeys";
 
@@ -67,6 +68,20 @@ export function usePlayersQuery() {
   return useQuery({
     queryKey: queryKeys.players.list(),
     queryFn: fetchPlayers
+  });
+}
+
+export function useUpdateMyAvatarMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (avatarUrl: string | null) => updateMyPlayerAvatar(avatarUrl),
+    onSuccess: (player) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.players.list() });
+      if (player) {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.players.detail(player.id) });
+      }
+    }
   });
 }
 

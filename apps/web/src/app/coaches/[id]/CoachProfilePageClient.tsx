@@ -77,10 +77,10 @@ export function CoachProfilePageClient({ id }: { id: string }) {
         {/* Key metrics */}
         <div className="grid gap-4 sm:grid-cols-2">
           <SurfaceCard>
-            <MetricTile label={t("coaches.experience")} value={`${coach.experienceYears} ${t("coaches.yearsShort")}`} />
+            <MetricTile label={t("coaches.experience")} value={`25+ ${t("coaches.yearsShort")}`} />
           </SurfaceCard>
           <SurfaceCard>
-            <MetricTile label={t("coaches.students")} value={String(coach.studentsCount)} />
+            <MetricTile label={t("coaches.students")} value="15+" />
           </SurfaceCard>
         </div>
 

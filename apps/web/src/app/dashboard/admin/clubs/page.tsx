@@ -237,7 +237,11 @@ export default function AdminClubsPage() {
           onSave={(input) => updateMutation.mutateAsync({ id: club.id, input })}
           onDelete={async () => {
             if (window.confirm(`${t("admin.clubs.deleteConfirm")} ${text(club.name)}?`)) {
-              await deleteMutation.mutateAsync(club.id);
+              try {
+                await deleteMutation.mutateAsync(club.id);
+              } catch {
+                window.alert(t("common.errorText"));
+              }
             }
           }}
           isUpdating={updateMutation.isPending}

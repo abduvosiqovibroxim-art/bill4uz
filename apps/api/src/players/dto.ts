@@ -1,5 +1,17 @@
 import type { LocalizedTextDto } from "../tournaments/dto";
 import { PlayerLevel } from "@prisma/client";
+import { IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+
+export class UpdatePlayerAvatarDto {
+  // Allow null to remove the avatar; otherwise require an image data URL or http(s) URL.
+  @ValidateIf((object: UpdatePlayerAvatarDto) => object.avatarUrl !== null)
+  @IsString()
+  @MaxLength(2_000_000)
+  @Matches(/^(data:image\/(png|jpe?g|webp);base64,|https?:\/\/)/, {
+    message: "avatarUrl must be an image data URL or an http(s) URL"
+  })
+  avatarUrl!: string | null;
+}
 
 export interface PlayerComputedFields {
   cityKey: string;

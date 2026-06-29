@@ -70,11 +70,25 @@ export class UsersService {
   }
 
   deleteAdmin(id: string) {
-    return this.prisma.user.delete({
-      where: { id },
-      select: {
-        id: true
+    // A user can own a Player profile whose dependent rows (applications,
+    // rankings, matches, captained teams) and the user's notifications have
+    // no cascade FK, so a bare user.delete() fails with a constraint error.
+    // Clear those blockers first inside a transaction, then delete the user.
+    return this.prisma.$transaction(async (tx) => {
+      const player = await tx.player.findUnique({ where: { userId: id }, select: { id: true } });
+
+      if (player) {
+        const playerId = player.id;
+        await tx.application.deleteMany({ where: { playerId } });
+        await tx.ranking.deleteMany({ where: { playerId } });
+        await tx.match.deleteMany({ where: { OR: [{ playerAId: playerId }, { playerBId: playerId }] } });
+        await tx.team.deleteMany({ where: { captainId: playerId } });
+        await tx.player.delete({ where: { id: playerId } });
       }
+
+      await tx.notification.deleteMany({ where: { userId: id } });
+
+      return tx.user.delete({ where: { id }, select: { id: true } });
     });
   }
 }

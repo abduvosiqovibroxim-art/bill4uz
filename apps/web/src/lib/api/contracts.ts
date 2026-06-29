@@ -146,6 +146,7 @@ export interface RawPlayer {
   id: string;
   userId: string;
   fullName: string;
+  avatarUrl?: string | null;
   countryId: string;
   cityId: string;
   cityKey: string;

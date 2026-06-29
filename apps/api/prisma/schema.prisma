@@ -114,6 +114,12 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum AdvertisingRequestStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
 enum TeamMemberRole {
   CAPTAIN
   MEMBER
@@ -291,6 +297,7 @@ model Player {
   userId         String               @unique
   user           User                 @relation(fields: [userId], references: [id])
   fullName       String
+  avatarUrl      String?              @db.Text
   countryId      String
   cityId         String
   country        Country              @relation(fields: [countryId], references: [id])
@@ -728,6 +735,19 @@ model Notification {
   isRead    Boolean  @default(false)
   telegramDeliveredAt DateTime?
   createdAt DateTime @default(now())
+}
+
+model AdvertisingRequest {
+  id        String                   @id @default(cuid())
+  name      String
+  contact   String
+  company   String?
+  budget    String?
+  message   String                   @db.Text
+  status    AdvertisingRequestStatus @default(NEW)
+  createdAt DateTime                 @default(now())
+
+  @@index([status, createdAt])
 }
 
 model ClubTable {

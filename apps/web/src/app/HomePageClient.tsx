@@ -30,7 +30,7 @@ type Copy = {
   previewRating: string;
   catsEyebrow: string;
   catsTitle: string;
-  cats: { title: string; sub: string; cls: string; img: string; href: string }[];
+  cats: { title: string; cls: string; img: string; href: string }[];
   statsEyebrow: string;
   statsTitle: string;
   statsSub: string;
@@ -58,6 +58,10 @@ type Copy = {
   bookingCtaButton: string;
   sponsorLabel: string;
   sponsorSub: string;
+  advertiserEyebrow: string;
+  advertiserTitle: string;
+  advertiserText: string;
+  advertiserButton: string;
   months: string[];
 };
 
@@ -79,10 +83,10 @@ const copy: Record<Locale, Copy> = {
     catsEyebrow: "Дисциплины",
     catsTitle: "Выбери свою игру",
     cats: [
-      { title: "Пирамида", sub: "Русский бильярд", cls: "grad-pyramid", img: "/disciplines/pyramid.webp", href: "/tournaments?kind=pyramid" },
-      { title: "Пул", sub: "8 / 9 / 10", cls: "grad-pool", img: "/disciplines/pool.webp", href: "/tournaments?kind=pool" },
-      { title: "Снукер", sub: "Классика на большом столе", cls: "grad-snooker", img: "/disciplines/snooker.webp", href: "/tournaments?kind=snooker" },
-      { title: "Калхоз", sub: "Народная игра", cls: "grad-kalhoz", img: "/disciplines/kalhoz.webp", href: "/tournaments" }
+      { title: "Пирамида", cls: "grad-pyramid", img: "/disciplines/pyramid.webp", href: "/tournaments?kind=pyramid" },
+      { title: "Пул", cls: "grad-pool", img: "/disciplines/pool.webp", href: "/tournaments?kind=pool" },
+      { title: "Снукер", cls: "grad-snooker", img: "/disciplines/snooker.webp", href: "/tournaments?kind=snooker" },
+      { title: "Китайский бильярд", cls: "grad-kalhoz", img: "/disciplines/chinese.webp", href: "/tournaments" }
     ],
     statsEyebrow: "Платформа в цифрах",
     statsTitle: "Сообщество растёт каждый день",
@@ -115,6 +119,10 @@ const copy: Record<Locale, Copy> = {
     bookingCtaButton: "Открыть карту",
     sponsorLabel: "Место для партнёра",
     sponsorSub: "Рекламный блок платформы",
+    advertiserEyebrow: "Партнёрство",
+    advertiserTitle: "Рекламодатель?",
+    advertiserText: "Размещение рекламы на платформе гарантированно привлечёт внимание спортсменов и болельщиков. Условия и форматы — в этом разделе.",
+    advertiserButton: "Разместить рекламу",
     months: ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"]
   },
   uz: {
@@ -134,10 +142,10 @@ const copy: Record<Locale, Copy> = {
     catsEyebrow: "Yo'nalishlar",
     catsTitle: "O'yiningni tanla",
     cats: [
-      { title: "Piramida", sub: "Rus bilyardi", cls: "grad-pyramid", img: "/disciplines/pyramid.webp", href: "/tournaments?kind=pyramid" },
-      { title: "Pul", sub: "8 / 9 / 10", cls: "grad-pool", img: "/disciplines/pool.webp", href: "/tournaments?kind=pool" },
-      { title: "Snooker", sub: "Katta stol klassikasi", cls: "grad-snooker", img: "/disciplines/snooker.webp", href: "/tournaments?kind=snooker" },
-      { title: "Kalxoz", sub: "Xalq o'yini", cls: "grad-kalhoz", img: "/disciplines/kalhoz.webp", href: "/tournaments" }
+      { title: "Piramida", cls: "grad-pyramid", img: "/disciplines/pyramid.webp", href: "/tournaments?kind=pyramid" },
+      { title: "Pul", cls: "grad-pool", img: "/disciplines/pool.webp", href: "/tournaments?kind=pool" },
+      { title: "Snooker", cls: "grad-snooker", img: "/disciplines/snooker.webp", href: "/tournaments?kind=snooker" },
+      { title: "Xitoy bilyardi", cls: "grad-kalhoz", img: "/disciplines/chinese.webp", href: "/tournaments" }
     ],
     statsEyebrow: "Raqamlarda",
     statsTitle: "Hamjamiyat har kuni o'smoqda",
@@ -170,6 +178,10 @@ const copy: Record<Locale, Copy> = {
     bookingCtaButton: "Xaritani ochish",
     sponsorLabel: "Hamkor uchun joy",
     sponsorSub: "Platforma reklama bloki",
+    advertiserEyebrow: "Hamkorlik",
+    advertiserTitle: "Reklama beruvchimisiz?",
+    advertiserText: "Platformada reklama joylashtirish sportchilar va muxlislar e'tiborini kafolatli jalb qiladi. Shartlar va formatlar — shu bo'limda.",
+    advertiserButton: "Reklama joylashtirish",
     months: ["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avg", "sen", "okt", "noy", "dek"]
   },
   en: {
@@ -189,10 +201,10 @@ const copy: Record<Locale, Copy> = {
     catsEyebrow: "Disciplines",
     catsTitle: "Pick your game",
     cats: [
-      { title: "Pyramid", sub: "Russian billiards", cls: "grad-pyramid", img: "/disciplines/pyramid.webp", href: "/tournaments?kind=pyramid" },
-      { title: "Pool", sub: "8 / 9 / 10", cls: "grad-pool", img: "/disciplines/pool.webp", href: "/tournaments?kind=pool" },
-      { title: "Snooker", sub: "Classic big-table game", cls: "grad-snooker", img: "/disciplines/snooker.webp", href: "/tournaments?kind=snooker" },
-      { title: "Kalhoz", sub: "Folk game", cls: "grad-kalhoz", img: "/disciplines/kalhoz.webp", href: "/tournaments" }
+      { title: "Pyramid", cls: "grad-pyramid", img: "/disciplines/pyramid.webp", href: "/tournaments?kind=pyramid" },
+      { title: "Pool", cls: "grad-pool", img: "/disciplines/pool.webp", href: "/tournaments?kind=pool" },
+      { title: "Snooker", cls: "grad-snooker", img: "/disciplines/snooker.webp", href: "/tournaments?kind=snooker" },
+      { title: "Chinese billiards", cls: "grad-kalhoz", img: "/disciplines/chinese.webp", href: "/tournaments" }
     ],
     statsEyebrow: "Platform in numbers",
     statsTitle: "The community grows every day",
@@ -225,6 +237,10 @@ const copy: Record<Locale, Copy> = {
     bookingCtaButton: "Open the map",
     sponsorLabel: "Partner placement",
     sponsorSub: "Platform ad slot",
+    advertiserEyebrow: "Partnership",
+    advertiserTitle: "An advertiser?",
+    advertiserText: "Advertising on the platform is guaranteed to draw the attention of athletes and fans. Terms and formats are in this section.",
+    advertiserButton: "Place an ad",
     months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   }
 };
@@ -326,7 +342,6 @@ export function HomePageClient() {
                 style={{ ["--tile-bg" as string]: `url(${cat.img})` } as CSSProperties}
               >
                 <h3 className="portal-cat-title">{cat.title}</h3>
-                <p className="portal-cat-sub">{cat.sub}</p>
               </Link>
             ))}
           </div>
@@ -412,7 +427,19 @@ export function HomePageClient() {
           </div>
         </section>
 
-        {/* 6. NEWS (only when real items exist) */}
+        {/* 6. ADVERTISER CTA */}
+        <section>
+          <div className="portal-panel" style={{ display: "grid", gap: "0.6rem" }}>
+            <span className="portal-eyebrow">{c.advertiserEyebrow}</span>
+            <h2 className="portal-panel-title" style={{ fontSize: "clamp(1.3rem, 1rem + 1.4vw, 1.8rem)" }}>{c.advertiserTitle}</h2>
+            <p className="portal-info-text" style={{ maxWidth: "44rem" }}>{c.advertiserText}</p>
+            <div style={{ marginTop: "0.4rem" }}>
+              <Link href="/advertise" className="button-primary">{c.advertiserButton}</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* 7. NEWS (only when real items exist) */}
         <HomeNews c={c} />
 
         {/* 7. SPONSOR PLACEHOLDER */}

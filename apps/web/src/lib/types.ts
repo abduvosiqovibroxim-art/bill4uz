@@ -161,6 +161,7 @@ export interface Player {
   id: string;
   userId?: string;
   fullName: string;
+  avatarUrl: string | null;
   cityKey: string;
   countryKey: string;
   clubId: string | null;
@@ -490,6 +491,12 @@ export interface RankingEntry {
   player: Player;
 }
 
+export interface MediaAssetEntry {
+  id: string;
+  type: string;
+  url: string;
+}
+
 export interface MediaEntry {
   id: string;
   title: LocalizedText;
@@ -497,6 +504,7 @@ export interface MediaEntry {
   typeKey: string;
   assetsCount: number;
   coverUrl: string | null;
+  assets: MediaAssetEntry[];
 }
 
 export interface AdminUser {

@@ -23,6 +23,8 @@ import { CashierModule } from "./cashier/cashier.module";
 import { TeamsModule } from "./teams/teams.module";
 import { DisputesModule } from "./disputes/disputes.module";
 import { CoachesModule } from "./coaches/coaches.module";
+import { ClubOpsModule } from "./club-ops/club-ops.module";
+import { AdvertisingModule } from "./advertising/advertising.module";
 
 @Module({
   imports: [
@@ -48,7 +50,9 @@ import { CoachesModule } from "./coaches/coaches.module";
     CashierModule,
     TeamsModule,
     DisputesModule,
-    CoachesModule
+    CoachesModule,
+    ClubOpsModule,
+    AdvertisingModule
   ],
   controllers: [AppController]
 })

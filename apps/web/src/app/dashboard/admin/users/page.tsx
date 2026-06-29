@@ -28,8 +28,12 @@ export default function AdminUsersPage() {
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await createMutation.mutateAsync(form);
-    setForm({ email: "", password: "", role: "PLAYER", isVerified: true });
+    try {
+      await createMutation.mutateAsync(form);
+      setForm({ email: "", password: "", role: "PLAYER", isVerified: true });
+    } catch {
+      window.alert(t("common.errorText"));
+    }
   }
 
   if (usersQuery.isPending) {
@@ -80,7 +84,11 @@ export default function AdminUsersPage() {
           onSave={(input) => updateMutation.mutateAsync({ id: user.id, input })}
           onDelete={async () => {
             if (window.confirm(`${t("admin.users.deleteConfirm")} ${user.email}?`)) {
-              await deleteMutation.mutateAsync(user.id);
+              try {
+                await deleteMutation.mutateAsync(user.id);
+              } catch {
+                window.alert(t("common.errorText"));
+              }
             }
           }}
           isUpdating={updateMutation.isPending}

@@ -5,7 +5,7 @@ import * as nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 import { join, resolve } from "path";
 
-type EmailCategory = "verify-email" | "reset-password";
+type EmailCategory = "verify-email" | "reset-password" | "advertising-request";
 
 @Injectable()
 export class EmailService implements OnModuleDestroy {
@@ -75,6 +75,23 @@ export class EmailService implements OnModuleDestroy {
         "<p>If you did not request this change, you can ignore this email.</p>"
       ].join("")
     });
+  }
+
+  async sendAdvertisingRequestEmail(to: string, body: string) {
+    await this.sendMessage({
+      category: "advertising-request",
+      to,
+      subject: "Новая заявка на размещение рекламы — Billard.uz",
+      text: body,
+      html: `<pre style="font-family: inherit; white-space: pre-wrap;">${this.escapeHtml(body)}</pre>`
+    });
+  }
+
+  private escapeHtml(value: string) {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   }
 
   private async sendMessage(input: {

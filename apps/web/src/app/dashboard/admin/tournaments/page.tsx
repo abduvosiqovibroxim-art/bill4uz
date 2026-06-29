@@ -195,7 +195,11 @@ export default function AdminTournamentsPage() {
           onSave={(input) => updateMutation.mutateAsync({ id: tournament.id, input })}
           onDelete={async () => {
             if (window.confirm(`${t("admin.tournaments.deleteConfirm")} ${text(tournament.title)}?`)) {
-              await deleteMutation.mutateAsync(tournament.id);
+              try {
+                await deleteMutation.mutateAsync(tournament.id);
+              } catch {
+                window.alert(t("common.errorText"));
+              }
             }
           }}
           isUpdating={updateMutation.isPending}

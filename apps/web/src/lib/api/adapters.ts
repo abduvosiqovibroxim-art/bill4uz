@@ -272,6 +272,7 @@ function adaptParticipant(raw: RawPlayer): Player {
     id: raw.id,
     userId: raw.userId,
     fullName: raw.fullName,
+    avatarUrl: raw.avatarUrl ?? null,
     cityKey: raw.cityKey,
     countryKey: raw.countryKey,
     clubId: raw.clubId ?? null,
@@ -417,6 +418,7 @@ export function adaptPlayer(raw: RawPlayer): Player {
     id: raw.id,
     userId: raw.userId,
     fullName: raw.fullName,
+    avatarUrl: raw.avatarUrl ?? null,
     cityKey: raw.cityKey,
     countryKey: raw.countryKey,
     clubId: raw.clubId ?? null,
@@ -507,7 +509,8 @@ export function adaptGallery(raw: RawGallery): MediaEntry {
     description: localizedOptional(raw.description),
     typeKey: raw.typeKey,
     assetsCount: raw.assets.length,
-    coverUrl: raw.assets[0]?.url ?? null
+    coverUrl: raw.assets[0]?.url ?? null,
+    assets: raw.assets.map((asset) => ({ id: asset.id, type: asset.type, url: asset.url }))
   };
 }
 

@@ -13,7 +13,7 @@ import {
 } from "@/components/dashboard/DashboardKit";
 import { dashboardCopy } from "@/components/dashboard/dashboardCopy";
 import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
-import { useApplicationsAdminQuery, useClubBookingsByClubIdsQuery, useClubsQuery, useTournamentsQuery, useUsersAdminQuery } from "@/lib/api/hooks";
+import { useAdminBookingsQuery, useApplicationsAdminQuery, useClubsQuery, useTournamentsQuery, useUsersAdminQuery } from "@/lib/api/hooks";
 import { useI18n } from "@/lib/i18n";
 import type { LocalizedText } from "@/lib/types";
 
@@ -38,15 +38,14 @@ export default function AdminDashboardPage() {
   const clubsQuery = useClubsQuery();
   const tournamentsQuery = useTournamentsQuery();
   const applicationsQuery = useApplicationsAdminQuery();
-  const clubIds = (clubsQuery.data ?? []).map((club) => club.id);
-  const bookingsQuery = useClubBookingsByClubIdsQuery(clubIds, clubsQuery.isSuccess && clubIds.length > 0);
+  const bookingsQuery = useAdminBookingsQuery();
 
   const loading =
     usersQuery.isPending ||
     clubsQuery.isPending ||
     tournamentsQuery.isPending ||
     applicationsQuery.isPending ||
-    (clubIds.length > 0 && bookingsQuery.isPending);
+    bookingsQuery.isPending;
 
   const error =
     usersQuery.isError ||

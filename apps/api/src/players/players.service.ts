@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PlayerLevel, Prisma } from "@prisma/client";
 import { PrismaService } from "../common/prisma.service";
 import type { LocalizedTextDto } from "../tournaments/dto";
@@ -89,6 +89,21 @@ export class PlayersService {
     });
 
     return players.map((player) => this.serializePlayer(player));
+  }
+
+  async updateOwnAvatar(userId: string, avatarUrl: string | null): Promise<PlayerDetailResponse | null> {
+    const player = await this.prisma.player.findUnique({ where: { userId }, select: { id: true } });
+
+    if (!player) {
+      throw new NotFoundException("Player profile not found");
+    }
+
+    await this.prisma.player.update({
+      where: { id: player.id },
+      data: { avatarUrl }
+    });
+
+    return this.findOne(player.id);
   }
 
   async findOne(id: string): Promise<PlayerDetailResponse | null> {

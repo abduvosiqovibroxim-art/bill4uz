@@ -75,6 +75,90 @@ export function hourlyRateMinorFor(kind: string | null | undefined, date: Date, 
   throw new BadRequestException("Selected time is outside booking pricing hours.");
 }
 
+export function resolveOptionalClubPricingConfig(input: {
+  regularMorningPriceMinor?: number | null;
+  regularEveningPriceMinor?: number | null;
+  vipMorningPriceMinor?: number | null;
+  vipEveningPriceMinor?: number | null;
+}): ClubPricingConfig | null {
+  if (
+    typeof input.regularMorningPriceMinor !== "number" ||
+    typeof input.regularEveningPriceMinor !== "number" ||
+    typeof input.vipMorningPriceMinor !== "number" ||
+    typeof input.vipEveningPriceMinor !== "number"
+  ) {
+    return null;
+  }
+
+  return {
+    regularMorningPriceMinor: input.regularMorningPriceMinor,
+    regularEveningPriceMinor: input.regularEveningPriceMinor,
+    vipMorningPriceMinor: input.vipMorningPriceMinor,
+    vipEveningPriceMinor: input.vipEveningPriceMinor
+  };
+}
+
+export interface SessionPriceQuote {
+  tableKind: ClubTableKind;
+  minutes: number;
+  priceMinor: number;
+  segments: BookingPriceSegment[];
+}
+
+// Live table sessions can run at any hour (including the 02:00–10:00 off-window where booking
+// pricing is disabled). Unlike booking pricing this never throws: off-hours fall back to the
+// evening rate so closing a session always succeeds.
+function sessionHourlyRateMinorFor(kind: string | null | undefined, date: Date, pricing: ClubPricingConfig) {
+  const tableKind = normalizeTableKind(kind);
+  const minuteOfDay = getTashkentMinuteOfDay(date);
+  const isMorning = minuteOfDay >= 10 * 60 && minuteOfDay < 18 * 60;
+
+  if (isMorning) {
+    return tableKind === "VIP" ? pricing.vipMorningPriceMinor : pricing.regularMorningPriceMinor;
+  }
+
+  return tableKind === "VIP" ? pricing.vipEveningPriceMinor : pricing.regularEveningPriceMinor;
+}
+
+export function calculateSessionPrice(
+  kind: string | null | undefined,
+  startedAt: Date,
+  endedAt: Date,
+  pricing: ClubPricingConfig
+): SessionPriceQuote {
+  const tableKind = normalizeTableKind(kind);
+  const segments: BookingPriceSegment[] = [];
+
+  if (!Number.isFinite(startedAt.getTime()) || !Number.isFinite(endedAt.getTime()) || endedAt.getTime() <= startedAt.getTime()) {
+    return { tableKind, minutes: 0, priceMinor: 0, segments };
+  }
+
+  let cursor = startedAt;
+  while (cursor.getTime() < endedAt.getTime()) {
+    const hourlyRateMinor = sessionHourlyRateMinorFor(tableKind, cursor, pricing);
+    const segmentEnd = new Date(Math.min(endedAt.getTime(), nextPricingBoundary(cursor).getTime()));
+    const minutes = Math.round((segmentEnd.getTime() - cursor.getTime()) / 60_000);
+    const amountMinor = Math.round((hourlyRateMinor * minutes) / 60);
+
+    segments.push({
+      startAt: cursor.toISOString(),
+      endAt: segmentEnd.toISOString(),
+      hourlyRateMinor,
+      minutes,
+      amountMinor
+    });
+
+    cursor = segmentEnd;
+  }
+
+  return {
+    tableKind,
+    minutes: segments.reduce((sum, segment) => sum + segment.minutes, 0),
+    priceMinor: segments.reduce((sum, segment) => sum + segment.amountMinor, 0),
+    segments
+  };
+}
+
 export function calculateBookingPrice(
   kind: string | null | undefined,
   startAt: Date,

@@ -209,7 +209,23 @@ export function TournamentsPageClient() {
       <section className="portal-hero portal-hero-solo" style={{ padding: "clamp(1.2rem, 3vw, 2rem)" }}>
         <div className="portal-hero-copy">
           <span className="portal-eyebrow">{c.eyebrow}</span>
-          <h1 className="portal-hero-title" style={{ fontSize: "clamp(1.8rem, 1.2rem + 2.4vw, 2.6rem)" }}>{c.title}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+            <span
+              aria-hidden="true"
+              style={{
+                width: "clamp(44px, 8vw, 60px)",
+                height: "clamp(44px, 8vw, 60px)",
+                flexShrink: 0,
+                borderRadius: "16px",
+                backgroundImage: "url(/disciplines/pyramid.webp)",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                border: "1px solid var(--card-border)",
+                boxShadow: "0 6px 18px rgba(0, 0, 0, 0.18)"
+              }}
+            />
+            <h1 className="portal-hero-title" style={{ fontSize: "clamp(1.8rem, 1.2rem + 2.4vw, 2.6rem)" }}>{c.title}</h1>
+          </div>
           <p className="portal-hero-lead">{c.subtitle}</p>
           <div className="portal-hero-chips">
             <span className="portal-chip"><span className="tick" aria-hidden="true">●</span>{formatNumber(filtered.length)} {c.found}</span>

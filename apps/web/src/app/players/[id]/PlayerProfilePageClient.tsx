@@ -5,7 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { ErrorState } from "@/components/DataState";
 import { usePlayerQuery } from "@/lib/api/hooks";
 import { useI18n } from "@/lib/i18n";
-import { gradientFromString, initialsFromName } from "@/lib/visuals";
+import { gradientFromString } from "@/lib/visuals";
 import type { Locale, PlayerDetail, PlayerRecentMatch } from "@/lib/types";
 
 const copy: Record<Locale, {
@@ -91,12 +91,22 @@ function PlayerProfile({ player }: { player: PlayerDetail }) {
   const matches = player.wins + player.losses;
   const handle = "@" + player.fullName.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 24) || "@player";
   const favoriteFormat = player.disciplines[0] ?? "—";
-  const avatar = (
+  const avatar = player.avatarUrl ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={player.avatarUrl}
+      alt={player.fullName}
+      className="h-28 w-28 shrink-0 rounded-3xl object-cover md:h-32 md:w-32"
+    />
+  ) : (
     <span
-      className="flex h-28 w-28 shrink-0 items-center justify-center rounded-3xl text-4xl font-black text-white md:h-32 md:w-32"
+      className="flex h-28 w-28 shrink-0 items-center justify-center rounded-3xl text-white md:h-32 md:w-32"
       style={{ backgroundImage: gradientFromString(player.fullName) }}
+      aria-label={player.fullName}
     >
-      {initialsFromName(player.fullName)}
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-1/2 w-1/2 opacity-90" aria-hidden="true">
+        <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.69-8 6v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-3.31-3.58-6-8-6Z" />
+      </svg>
     </span>
   );
 

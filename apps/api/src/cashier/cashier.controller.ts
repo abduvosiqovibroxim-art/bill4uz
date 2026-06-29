@@ -12,7 +12,6 @@ import {
   OpenShiftDto,
   CloseShiftDto,
   CreateTransactionDto,
-  ShiftIdParamDto,
   ClubIdParamDto,
 } from './dto';
 import { JwtAccessGuard } from '../auth/jwt-access.guard';
@@ -36,11 +35,11 @@ export class CashierController {
   @Post('shifts/:id/close')
   @ApiOperation({ summary: 'Close an open shift' })
   closeShift(
-    @Param() clubParam: ClubIdParamDto,
-    @Param() shiftParam: ShiftIdParamDto,
+    @Param('clubId') clubId: string,
+    @Param('id') shiftId: string,
     @Body() dto: CloseShiftDto,
   ) {
-    return this.cashierService.closeShift(clubParam.clubId, shiftParam.id, dto);
+    return this.cashierService.closeShift(clubId, shiftId, dto);
   }
 
   @Get('shifts/current')
@@ -69,24 +68,20 @@ export class CashierController {
   @Post('shifts/:id/transactions')
   @ApiOperation({ summary: 'Create a transaction in a shift' })
   createTransaction(
-    @Param() clubParam: ClubIdParamDto,
-    @Param() shiftParam: ShiftIdParamDto,
+    @Param('clubId') clubId: string,
+    @Param('id') shiftId: string,
     @Body() dto: CreateTransactionDto,
   ) {
-    return this.cashierService.createTransaction(
-      clubParam.clubId,
-      shiftParam.id,
-      dto,
-    );
+    return this.cashierService.createTransaction(clubId, shiftId, dto);
   }
 
   @Get('shifts/:id/transactions')
   @ApiOperation({ summary: 'Get all transactions for a shift' })
   getTransactions(
-    @Param() clubParam: ClubIdParamDto,
-    @Param() shiftParam: ShiftIdParamDto,
+    @Param('clubId') clubId: string,
+    @Param('id') shiftId: string,
   ) {
-    return this.cashierService.getTransactions(clubParam.clubId, shiftParam.id);
+    return this.cashierService.getTransactions(clubId, shiftId);
   }
 
   // === REPORTS ===

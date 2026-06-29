@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   DashboardActionCard,
   DashboardActionGrid,
@@ -16,10 +16,12 @@ import { dashboardCopy } from "@/components/dashboard/dashboardCopy";
 import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
 import { useAuth } from "@/components/AuthProvider";
 import { GlowButton, NoticePanel } from "@/components/ui";
-import { useCancelBookingMutation, useMyBookingsQuery, usePlayerQuery, usePlayersQuery } from "@/lib/api/hooks";
+import { useCancelBookingMutation, useMyBookingsQuery, usePlayerQuery, usePlayersQuery, useUpdateMyAvatarMutation } from "@/lib/api/hooks";
 import { getUserFacingApiError } from "@/lib/api/errors";
+import { fileToAvatarDataUrl, MAX_AVATAR_SOURCE_BYTES } from "@/lib/imageResize";
+import { gradientFromString } from "@/lib/visuals";
 import { useI18n } from "@/lib/i18n";
-import type { BookingEntry, Tournament } from "@/lib/types";
+import type { BookingEntry, Player, PlayerDetail, Tournament } from "@/lib/types";
 
 export default function PlayerDashboardPage() {
   const { locale, t, text } = useI18n();
@@ -63,6 +65,8 @@ export default function PlayerDashboardPage() {
   return (
     <div className="space-y-5">
       <DashboardPageHeader eyebrow={c.player.eyebrow} title={c.player.title} subtitle={c.player.subtitle} />
+
+      {player ? <AvatarManager player={player} locale={locale} /> : null}
 
       <DashboardMetricGrid columns="md:grid-cols-6">
         <DashboardMetric label={c.player.tournaments} value={tournaments.length} />
@@ -199,6 +203,125 @@ export default function PlayerDashboardPage() {
       setFeedback({ tone: "error", message: getUserFacingApiError(error, { locale, t, debugLabel: "player-cancel-booking" }) });
     }
   }
+}
+
+function AvatarManager({ player, locale }: { player: Player | PlayerDetail; locale: "ru" | "uz" | "en" }) {
+  const { t } = useI18n();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const mutation = useUpdateMyAvatarMutation();
+  const [error, setError] = useState<string | null>(null);
+
+  const copy = {
+    ru: {
+      title: "Фото профиля",
+      subtitle: "Загрузите свою фотографию — она появится в вашем публичном профиле.",
+      upload: "Загрузить фото",
+      change: "Изменить фото",
+      remove: "Удалить",
+      hint: "JPG, PNG или WEBP, до 8 МБ. Фото будет уменьшено автоматически.",
+      tooBig: "Файл слишком большой (максимум 8 МБ).",
+      notImage: "Выберите изображение.",
+      failed: "Не удалось обновить фото. Попробуйте ещё раз."
+    },
+    uz: {
+      title: "Profil rasmi",
+      subtitle: "O'z rasmingizni yuklang — u ommaviy profilingizda ko'rinadi.",
+      upload: "Rasm yuklash",
+      change: "Rasmni o'zgartirish",
+      remove: "O'chirish",
+      hint: "JPG, PNG yoki WEBP, 8 MB gacha. Rasm avtomatik kichiklashtiriladi.",
+      tooBig: "Fayl juda katta (maksimal 8 MB).",
+      notImage: "Rasm tanlang.",
+      failed: "Rasmni yangilab bo'lmadi. Qayta urinib ko'ring."
+    },
+    en: {
+      title: "Profile photo",
+      subtitle: "Upload your photo — it appears on your public profile.",
+      upload: "Upload photo",
+      change: "Change photo",
+      remove: "Remove",
+      hint: "JPG, PNG or WEBP, up to 8MB. The photo is downscaled automatically.",
+      tooBig: "File is too large (max 8MB).",
+      notImage: "Please choose an image.",
+      failed: "Could not update the photo. Please try again."
+    }
+  }[locale];
+
+  async function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+    setError(null);
+
+    if (!file.type.startsWith("image/")) {
+      setError(copy.notImage);
+      return;
+    }
+    if (file.size > MAX_AVATAR_SOURCE_BYTES) {
+      setError(copy.tooBig);
+      return;
+    }
+
+    try {
+      const dataUrl = await fileToAvatarDataUrl(file);
+      await mutation.mutateAsync(dataUrl);
+    } catch (cause) {
+      setError(getUserFacingApiError(cause, { locale, t, fallbackKey: "system.errorText", debugLabel: "player-avatar" }));
+    }
+  }
+
+  async function onRemove() {
+    setError(null);
+    try {
+      await mutation.mutateAsync(null);
+    } catch (cause) {
+      setError(getUserFacingApiError(cause, { locale, t, fallbackKey: "system.errorText", debugLabel: "player-avatar" }));
+    }
+  }
+
+  return (
+    <DashboardSection title={copy.title} subtitle={copy.subtitle}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        {player.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={player.avatarUrl} alt={player.fullName} className="h-24 w-24 shrink-0 rounded-3xl object-cover" />
+        ) : (
+          <span
+            className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl text-white"
+            style={{ backgroundImage: gradientFromString(player.fullName) }}
+            aria-label={player.fullName}
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-1/2 w-1/2 opacity-90" aria-hidden="true">
+              <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.69-8 6v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-3.31-3.58-6-8-6Z" />
+            </svg>
+          </span>
+        )}
+
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            <GlowButton onClick={() => inputRef.current?.click()} disabled={mutation.isPending}>
+              {mutation.isPending ? t("commonUi.loading") : player.avatarUrl ? copy.change : copy.upload}
+            </GlowButton>
+            {player.avatarUrl ? (
+              <GlowButton variant="secondary" onClick={() => void onRemove()} disabled={mutation.isPending}>
+                {copy.remove}
+              </GlowButton>
+            ) : null}
+          </div>
+          <p className="text-xs" style={{ color: "var(--muted)" }}>{copy.hint}</p>
+        </div>
+
+        <input ref={inputRef} type="file" accept="image/*" hidden onChange={(event) => void onFileChange(event)} />
+      </div>
+      {error ? (
+        <div className="mt-3">
+          <NoticePanel tone="error">{error}</NoticePanel>
+        </div>
+      ) : null}
+    </DashboardSection>
+  );
 }
 
 function TournamentItem({

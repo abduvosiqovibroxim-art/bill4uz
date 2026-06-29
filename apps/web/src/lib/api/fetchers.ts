@@ -379,6 +379,34 @@ export async function createBooking(input: {
   return adaptBooking(response);
 }
 
+export async function submitAdvertisingRequest(input: {
+  name: string;
+  contact: string;
+  company?: string;
+  budget?: string;
+  message: string;
+}) {
+  return apiFetch<{ id: string; status: string; createdAt: string }>("/advertising-requests", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(input)
+  });
+}
+
+export async function updateMyPlayerAvatar(avatarUrl: string | null) {
+  const response = await apiFetch<RawPlayer | null>("/players/me/avatar", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ avatarUrl })
+  });
+
+  return response ? adaptPlayerDetail(response) : null;
+}
+
 export async function cancelBooking(id: string) {
   const response = await apiFetch<RawBooking>(`/bookings/${id}/cancel`, {
     method: "PATCH"

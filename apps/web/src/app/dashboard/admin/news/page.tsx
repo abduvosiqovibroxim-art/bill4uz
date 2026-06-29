@@ -29,14 +29,18 @@ export default function AdminNewsPage() {
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await createMutation.mutateAsync({
-      title: form.title,
-      slug: form.slug,
-      category: form.category,
-      content: form.content,
-      publishedAt: new Date(form.publishedAt).toISOString()
-    });
-    setForm({ title: "", slug: "", category: "platform", content: "", publishedAt: "" });
+    try {
+      await createMutation.mutateAsync({
+        title: form.title,
+        slug: form.slug,
+        category: form.category,
+        content: form.content,
+        publishedAt: new Date(form.publishedAt).toISOString()
+      });
+      setForm({ title: "", slug: "", category: "platform", content: "", publishedAt: "" });
+    } catch {
+      window.alert(t("common.errorText"));
+    }
   }
 
   if (newsQuery.isPending) {
@@ -91,7 +95,11 @@ export default function AdminNewsPage() {
           onSave={(input) => updateMutation.mutateAsync({ id: item.id, input })}
           onDelete={async () => {
             if (window.confirm(`${t("admin.news.deleteConfirm")} ${text(item.title)}?`)) {
-              await deleteMutation.mutateAsync(item.id);
+              try {
+                await deleteMutation.mutateAsync(item.id);
+              } catch {
+                window.alert(t("common.errorText"));
+              }
             }
           }}
           isUpdating={updateMutation.isPending}

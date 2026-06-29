@@ -7,8 +7,9 @@
     "apps/bot"
   ],
   "scripts": {
+    "predev": "node scripts/stop-stale-containers.mjs",
     "dev": "npm run dev:db && wait-on tcp:127.0.0.1:5433 && npm run prisma:generate -w apps/api && npm run prisma:deploy && npm run seed && npm run seed:qa && concurrently -k -n api,web,bot -c blue,green,yellow \"npm:dev:api\" \"npm:dev:web\" \"npm:dev:bot\"",
-    "dev:db": "docker compose up -d postgres",
+    "dev:db": "docker compose up -d postgres backup",
     "dev:web": "npm --workspace apps/web run dev",
     "dev:api": "npm --workspace apps/api run start:dev",
     "dev:bot": "npm --workspace apps/bot run dev",
@@ -18,6 +19,11 @@
     "docker:logs:api": "docker compose logs --tail=120 api",
     "docker:logs:web": "docker compose logs --tail=120 web",
     "docker:logs:bot": "docker compose logs --tail=120 bot",
+    "backup:up": "docker compose up -d postgres backup",
+    "backup:now": "docker exec billiard_backup bash /ops/pg-backup/snapshot.sh",
+    "backup:list": "docker exec billiard_backup bash /ops/pg-backup/list.sh",
+    "backup:logs": "docker logs --tail=80 billiard_backup",
+    "restore:snapshot": "docker exec billiard_backup bash /ops/pg-backup/restore-snapshot.sh",
     "build": "npm run prisma:generate -w apps/api && npm run build -w apps/api && npm run build -w apps/web && npm run build -w apps/bot",
     "test": "npm run test -w apps/api",
     "seed": "npm --workspace apps/api run prisma:seed",
