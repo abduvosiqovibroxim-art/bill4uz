@@ -24,10 +24,17 @@ const subtitleByLocale: Record<"ru" | "uz" | "en", string> = {
   en: "Manually adjust player ELO and level. The level is set directly and points are aligned automatically."
 };
 
+const searchPlaceholderByLocale: Record<"ru" | "uz" | "en", string> = {
+  ru: "Поиск игрока по имени…",
+  uz: "O'yinchini ism bo'yicha qidirish…",
+  en: "Search player by name…"
+};
+
 export default function AdminPlayersPage() {
   const { t, locale } = useI18n();
   const playersQuery = usePlayersQuery();
   const updateMutation = useUpdatePlayerAdminMutation();
+  const [search, setSearch] = useState("");
 
   if (playersQuery.isPending) {
     return <LoadingState />;
@@ -38,6 +45,10 @@ export default function AdminPlayersPage() {
   }
 
   const players = playersQuery.data ?? [];
+  const query = search.trim().toLowerCase();
+  const filtered = query
+    ? players.filter((player) => player.fullName.toLowerCase().includes(query))
+    : players;
 
   return (
     <div className="space-y-5">
@@ -47,8 +58,19 @@ export default function AdminPlayersPage() {
         subtitle={subtitleByLocale[locale]}
       />
 
-      {players.length === 0 ? <EmptyState message={t("common.noResults")} /> : null}
-      {players.map((player) => (
+      <SurfaceCard>
+        <FormInput
+          placeholder={searchPlaceholderByLocale[locale]}
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <p className="mt-2 text-sm text-muted">
+          {filtered.length} / {players.length}
+        </p>
+      </SurfaceCard>
+
+      {filtered.length === 0 ? <EmptyState message={t("common.noResults")} /> : null}
+      {filtered.map((player) => (
         <PlayerRow
           key={player.id}
           player={player}
