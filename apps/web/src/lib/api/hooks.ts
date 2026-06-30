@@ -44,6 +44,7 @@ import {
   fetchRankings,
   fetchTournament,
   fetchTournaments,
+  updatePlayerAdmin,
   fetchUsersAdmin,
   generateBracket,
   importClubsFromMapAdmin,
@@ -76,6 +77,20 @@ export function useUpdateMyAvatarMutation() {
 
   return useMutation({
     mutationFn: (avatarUrl: string | null) => updateMyPlayerAvatar(avatarUrl),
+    onSuccess: (player) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.players.list() });
+      if (player) {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.players.detail(player.id) });
+      }
+    }
+  });
+}
+
+export function useUpdatePlayerAdminMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Parameters<typeof updatePlayerAdmin>[1] }) => updatePlayerAdmin(id, input),
     onSuccess: (player) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.players.list() });
       if (player) {

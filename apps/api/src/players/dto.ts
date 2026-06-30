@@ -1,6 +1,6 @@
 import type { LocalizedTextDto } from "../tournaments/dto";
 import { PlayerLevel } from "@prisma/client";
-import { IsString, Matches, MaxLength, ValidateIf } from "class-validator";
+import { IsEnum, IsInt, IsOptional, IsString, Matches, MaxLength, Min, ValidateIf } from "class-validator";
 
 export class UpdatePlayerAvatarDto {
   // Allow null to remove the avatar; otherwise require an image data URL or http(s) URL.
@@ -11,6 +11,25 @@ export class UpdatePlayerAvatarDto {
     message: "avatarUrl must be an image data URL or an http(s) URL"
   })
   avatarUrl!: string | null;
+}
+
+// Admin-only manual override of a player's rating/level.
+export class AdminUpdatePlayerDto {
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  elo?: number;
+
+  // When set, level points are aligned to this level's threshold so the
+  // derived level stays stable (otherwise the next match would recompute it).
+  @IsOptional()
+  @IsEnum(PlayerLevel)
+  level?: PlayerLevel;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  levelPoints?: number;
 }
 
 export interface PlayerComputedFields {

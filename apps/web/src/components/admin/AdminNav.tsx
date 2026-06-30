@@ -9,6 +9,7 @@ const adminItems = [
   { href: "/dashboard/admin/news", labelKey: "admin.nav.news" },
   { href: "/dashboard/admin/clubs", labelKey: "admin.nav.clubs" },
   { href: "/dashboard/admin/users", labelKey: "admin.nav.users" },
+  { href: "/dashboard/admin/players", labelKey: "admin.nav.players" },
   { href: "/dashboard/admin/applications", labelKey: "admin.nav.applications" }
 ] as const;
 

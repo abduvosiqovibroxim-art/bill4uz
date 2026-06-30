@@ -38,6 +38,19 @@ export async function fetchPlayer(id: string): Promise<PlayerDetail | null> {
   return response ? adaptPlayerDetail(response) : null;
 }
 
+export async function updatePlayerAdmin(
+  id: string,
+  input: { elo?: number; level?: string; levelPoints?: number }
+): Promise<PlayerDetail | null> {
+  const response = await apiFetch<RawPlayer>(`/players/${id}/admin`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input)
+  });
+
+  return adaptPlayerDetail(response);
+}
+
 export async function fetchCoaches(): Promise<Coach[]> {
   const response = await apiFetch<RawCoach[]>("/coaches");
   return response.map(adaptCoach);

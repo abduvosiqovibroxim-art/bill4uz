@@ -110,6 +110,7 @@ export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
         news: "Новости",
         clubs: "Клубы",
         users: "Пользователи",
+        players: "Игроки",
         applications: "Заявки"
       },
       overview: {
@@ -390,6 +391,7 @@ export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
         news: "Yangiliklar",
         clubs: "Klublar",
         users: "Foydalanuvchilar",
+        players: "O'yinchilar",
         applications: "Arizalar"
       },
       overview: {
@@ -829,6 +831,7 @@ export const dictionaryPatches: Record<Locale, Record<string, unknown>> = {
         news: "News",
         clubs: "Clubs",
         users: "Users",
+        players: "Players",
         applications: "Applications"
       },
       overview: {

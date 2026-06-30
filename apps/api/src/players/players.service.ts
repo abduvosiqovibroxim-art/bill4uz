@@ -3,7 +3,14 @@ import { PlayerLevel, Prisma } from "@prisma/client";
 import { PrismaService } from "../common/prisma.service";
 import type { LocalizedTextDto } from "../tournaments/dto";
 import { tournamentDisciplineKeyFromName } from "../tournaments/disciplines";
-import { nextPlayerLevel, pointsToNextLevel } from "./player-levels";
+import {
+  PLAYER_LEVEL_MIN_POINTS,
+  nextPlayerLevel,
+  normalizeLevelPoints,
+  playerLevelFromPoints,
+  pointsToNextLevel
+} from "./player-levels";
+import type { AdminUpdatePlayerDto } from "./dto";
 import { winPercentage } from "../rating/rating.util";
 import { PlayerComputedFields, PlayerDetailComputedFields, PlayerLocalizedFields, PlayerRecentMatchDto, PlayerTournamentHistoryItemDto } from "./dto";
 
@@ -104,6 +111,35 @@ export class PlayersService {
     });
 
     return this.findOne(player.id);
+  }
+
+  // Admin manual override of ELO / level. Setting `level` aligns levelPoints to
+  // that level's threshold so the derived level stays stable across future matches.
+  async updateByAdmin(id: string, dto: AdminUpdatePlayerDto): Promise<PlayerDetailResponse | null> {
+    const player = await this.prisma.player.findUnique({ where: { id }, select: { id: true } });
+
+    if (!player) {
+      throw new NotFoundException("Player not found");
+    }
+
+    const data: Prisma.PlayerUpdateInput = {};
+
+    if (dto.elo !== undefined) {
+      data.elo = Math.max(0, Math.trunc(dto.elo));
+    }
+
+    if (dto.level !== undefined) {
+      data.level = dto.level;
+      data.levelPoints = PLAYER_LEVEL_MIN_POINTS[dto.level];
+    } else if (dto.levelPoints !== undefined) {
+      const points = normalizeLevelPoints(dto.levelPoints);
+      data.levelPoints = points;
+      data.level = playerLevelFromPoints(points);
+    }
+
+    await this.prisma.player.update({ where: { id }, data });
+
+    return this.findOne(id);
   }
 
   async findOne(id: string): Promise<PlayerDetailResponse | null> {
