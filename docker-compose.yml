@@ -69,9 +69,8 @@ services:
       YANDEX_SEARCH_QUERY: ${YANDEX_SEARCH_QUERY:-бильярд Ташкент}
     ports:
       - "4000:4000"
-    # "no" (not unless-stopped): keep Docker Desktop from auto-reviving this
-    # container on launch, where it would shadow local `npm run dev` over IPv6.
-    restart: "no"
+    # Always-on: auto-restart on crash and on machine reboot (Docker-only mode).
+    restart: unless-stopped
     volumes:
       - ./apps/api/.email-outbox:/app/apps/api/.email-outbox
     healthcheck:
@@ -94,8 +93,8 @@ services:
       INTERNAL_API_URL: http://api:4000/api
     ports:
       - "3000:3000"
-    # See api: avoid shadowing local dev over IPv6 after a Docker Desktop relaunch.
-    restart: "no"
+    # Always-on: auto-restart on crash and on machine reboot (Docker-only mode).
+    restart: unless-stopped
 
   bot:
     build:
@@ -117,8 +116,8 @@ services:
       BOT_WEBHOOK_URL: ${BOT_WEBHOOK_URL:-}
     ports:
       - "4100:4100"
-    # See api: avoid shadowing local dev over IPv6 after a Docker Desktop relaunch.
-    restart: "no"
+    # Always-on: auto-restart on crash and on machine reboot (Docker-only mode).
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4100/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
