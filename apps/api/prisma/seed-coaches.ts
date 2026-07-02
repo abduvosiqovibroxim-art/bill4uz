@@ -14,7 +14,7 @@ const COACHES = [
   },
   {
     fullName: "Khudoyberdiyev Tolagan Elmurod o'g'li",
-    photoUrl: "/coaches/coach-khudoyberdiyev.webp",
+    photoUrl: "/coaches/coach-khudoyberdiyev.jpg",
     specialization: "Мастер",
     qualification: CoachQualification.MASTER,
     cityName: "Tashkent",
