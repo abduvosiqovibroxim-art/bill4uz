@@ -115,8 +115,8 @@ export function Header() {
             <Image
               src="/brand/bill4-logo.png"
               alt="Bill4"
-              width={558}
-              height={375}
+              width={424}
+              height={374}
               priority
               className="brand-logo brand-logo-light"
             />
@@ -124,8 +124,8 @@ export function Header() {
               src="/brand/bill4-logo-dark.png"
               alt=""
               aria-hidden="true"
-              width={558}
-              height={375}
+              width={424}
+              height={374}
               priority
               className="brand-logo brand-logo-dark"
             />
