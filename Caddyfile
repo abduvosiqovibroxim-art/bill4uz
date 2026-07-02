@@ -1,0 +1,9 @@
+# Bill4 production reverse proxy (automatic HTTPS via Let's Encrypt).
+# Caddy terminates TLS for the domain and forwards to the Next.js web container.
+# Requires: DNS A records for bill4.uz (and www) pointing at this server, and
+# ports 80/443 open. Certificates are obtained and renewed automatically.
+
+bill4.uz, www.bill4.uz {
+	encode zstd gzip
+	reverse_proxy web:3000
+}

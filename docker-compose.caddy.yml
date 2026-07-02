@@ -1,0 +1,46 @@
+# Production edge layer: Caddy reverse proxy + HTTPS, and lockdown of internal
+# ports so only 80/443 are public. Layer it AFTER the base and production files:
+#
+#   docker compose -f docker-compose.yml \
+#                  -f docker-compose.production.yml \
+#                  -f docker-compose.caddy.yml up --build -d
+#
+services:
+  caddy:
+    image: caddy:2
+    container_name: billiard_caddy
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  # Keep app/database ports private — Caddy reaches web over the internal
+  # Docker network (web:3000), so nothing else needs to be world-reachable.
+  web:
+    ports: !override
+      - "127.0.0.1:3000:3000"
+  api:
+    ports: !override
+      - "127.0.0.1:4000:4000"
+    environment:
+      # No SMTP required to boot (emails go to a file). Set real SMTP in
+      # apps/api/.env.production and flip this to "true" for full production.
+      REQUIRE_PRODUCTION_CONFIG: "false"
+  bot:
+    ports: !override
+      - "127.0.0.1:4100:4100"
+    environment:
+      REQUIRE_PRODUCTION_CONFIG: "false"
+  postgres:
+    ports: !override
+      - "127.0.0.1:5433:5432"
+
+volumes:
+  caddy_data:
+  caddy_config:
