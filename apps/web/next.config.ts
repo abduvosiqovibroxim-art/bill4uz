@@ -13,6 +13,20 @@ const nextConfig: NextConfig = {
         destination: `${internalApiUrl.replace(/\/$/, "")}/:path*`
       }
     ];
+  },
+  async headers() {
+    // Brand assets must never be cached by the browser: they get redrawn often
+    // and a stale copy shows the wrong/old logo. Force a fresh fetch every load.
+    return [
+      {
+        source: "/brand/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store, must-revalidate" }]
+      },
+      {
+        source: "/icon.png",
+        headers: [{ key: "Cache-Control", value: "no-store, must-revalidate" }]
+      }
+    ];
   }
 };
 
