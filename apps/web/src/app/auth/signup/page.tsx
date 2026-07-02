@@ -122,19 +122,19 @@ export default function SignUpPage() {
         <div className="space-y-3">
           <div className="auth-brand">
             <Image
-              src="/brand/bill4-logo.png?v=2"
+              src="/brand/bill4-logo.png?v=3"
               alt="Bill4"
-              width={1007}
-              height={230}
+              width={2284}
+              height={537}
               priority
               className="brand-logo brand-logo-light"
             />
             <Image
-              src="/brand/bill4-logo-dark.png?v=2"
+              src="/brand/bill4-logo-dark.png?v=3"
               alt=""
               aria-hidden="true"
-              width={1007}
-              height={230}
+              width={2284}
+              height={537}
               priority
               className="brand-logo brand-logo-dark"
             />
