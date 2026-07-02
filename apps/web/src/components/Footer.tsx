@@ -119,8 +119,8 @@ export function Footer() {
             <Image
               src="/brand/bill4-logo-dark.png"
               alt="Bill4"
-              width={424}
-              height={374}
+              width={1007}
+              height={230}
               className="site-footer-logo-img"
             />
           </Link>

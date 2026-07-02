@@ -5526,7 +5526,7 @@ textarea {
 /* Bill4 brand logo (theme-aware): dark mark on light theme, light mark on dark theme. */
 .brand-logo {
   display: block;
-  height: 48px;
+  height: 40px;
   width: auto;
 }
 
@@ -5544,7 +5544,7 @@ html[data-theme="dark"] .brand-logo-dark {
 
 @media (max-width: 640px) {
   .brand-logo {
-    height: 40px;
+    height: 32px;
   }
 }
 
@@ -7978,7 +7978,7 @@ a.portal-info-card:hover {
 
 .site-footer-logo-img {
   display: block;
-  height: 48px;
+  height: 44px;
   width: auto;
 }
 

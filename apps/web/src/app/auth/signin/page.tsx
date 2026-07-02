@@ -87,8 +87,8 @@ export default function SignInPage() {
             <Image
               src="/brand/bill4-logo.png"
               alt="Bill4"
-              width={424}
-              height={374}
+              width={1007}
+              height={230}
               priority
               className="brand-logo brand-logo-light"
             />
@@ -96,8 +96,8 @@ export default function SignInPage() {
               src="/brand/bill4-logo-dark.png"
               alt=""
               aria-hidden="true"
-              width={424}
-              height={374}
+              width={1007}
+              height={230}
               priority
               className="brand-logo brand-logo-dark"
             />
