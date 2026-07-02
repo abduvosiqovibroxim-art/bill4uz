@@ -2,6 +2,10 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// The platform admin lives at @billuz.local too, so it matches the demo filters
+// below. Never delete it — the whole panel depends on this account.
+const PROTECTED_EMAIL = "admin@billuz.local";
+
 async function main() {
   if (process.env.NODE_ENV === "production" && process.env.ALLOW_PRODUCTION_DEMO_CLEANUP !== "true") {
     console.warn("Demo cleanup is disabled in production. Set ALLOW_PRODUCTION_DEMO_CLEANUP=true to run it.");
@@ -41,6 +45,9 @@ async function main() {
     ]
   };
 
+  const admin = await prisma.user.findUnique({ where: { email: PROTECTED_EMAIL }, select: { id: true } });
+  const protectedUserIds = new Set(admin ? [admin.id] : []);
+
   const clubs = await prisma.club.findMany({ where: demoClubWhere, select: { id: true, userId: true } });
   const players = await prisma.player.findMany({ where: demoPlayerWhere, select: { id: true, userId: true } });
   const users = await prisma.user.findMany({ where: demoUserWhere, select: { id: true } });
@@ -67,7 +74,7 @@ async function main() {
   const userIds = unique([
     ...preliminaryUserIds,
     ...tournaments.map((item) => item.organizerId)
-  ]);
+  ]).filter((id) => !protectedUserIds.has(id));
 
   const result = await prisma.$transaction(async (tx) => {
     const deleted = {

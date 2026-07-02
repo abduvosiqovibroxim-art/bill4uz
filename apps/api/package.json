@@ -12,8 +12,6 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "seed:qa": "ts-node prisma/seed.qa.ts",
-    "seed:demo": "ts-node prisma/seed-demo-brackets.ts",
     "seed:coaches": "ts-node prisma/seed-coaches.ts",
     "seed:clubs:bill4you": "ts-node prisma/seed-bill4you-clubs.ts",
     "db:clean-demo": "ts-node prisma/clean-demo.ts",

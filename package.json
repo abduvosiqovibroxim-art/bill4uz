@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "predev": "node scripts/stop-stale-containers.mjs",
-    "dev": "npm run dev:db && wait-on tcp:127.0.0.1:5433 && npm run prisma:generate -w apps/api && npm run prisma:deploy && npm run seed && npm run seed:qa && concurrently -k -n api,web,bot -c blue,green,yellow \"npm:dev:api\" \"npm:dev:web\" \"npm:dev:bot\"",
+    "dev": "npm run dev:db && wait-on tcp:127.0.0.1:5433 && npm run prisma:generate -w apps/api && npm run prisma:deploy && npm run seed && concurrently -k -n api,web,bot -c blue,green,yellow \"npm:dev:api\" \"npm:dev:web\" \"npm:dev:bot\"",
     "dev:db": "docker compose up -d postgres backup",
     "dev:web": "npm --workspace apps/web run dev",
     "dev:api": "npm --workspace apps/api run start:dev",
@@ -27,8 +27,6 @@
     "build": "npm run prisma:generate -w apps/api && npm run build -w apps/api && npm run build -w apps/web && npm run build -w apps/bot",
     "test": "npm run test -w apps/api",
     "seed": "npm --workspace apps/api run prisma:seed",
-    "seed:qa": "npm --workspace apps/api run seed:qa",
-    "seed:demo": "npm --workspace apps/api run seed:demo",
     "seed:coaches": "npm --workspace apps/api run seed:coaches",
     "seed:clubs:bill4you": "npm --workspace apps/api run seed:clubs:bill4you",
     "prisma:generate": "npm --workspace apps/api run prisma:generate",
