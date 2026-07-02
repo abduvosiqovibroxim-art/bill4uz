@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { startTransition, useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -120,8 +121,23 @@ export default function SignUpPage() {
       <div className="auth-card space-y-5">
         <div className="space-y-3">
           <div className="auth-brand">
-            <span className="auth-brand-badge" aria-hidden="true">B</span>
-            <span className="auth-brand-word">Bill4</span>
+            <Image
+              src="/brand/bill4-logo.png"
+              alt="Bill4"
+              width={558}
+              height={375}
+              priority
+              className="brand-logo brand-logo-light"
+            />
+            <Image
+              src="/brand/bill4-logo-dark.png"
+              alt=""
+              aria-hidden="true"
+              width={558}
+              height={375}
+              priority
+              className="brand-logo brand-logo-dark"
+            />
           </div>
           <p className="eyebrow">{t("auth.signupSimple.eyebrow")}</p>
           <h1 className="section-title" style={{ color: "var(--color-text, var(--text))" }}>{t("auth.signupSimple.title")}</h1>

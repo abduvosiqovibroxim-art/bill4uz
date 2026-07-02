@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useEffect, useMemo, useState, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ErrorState } from "@/components/DataState";
@@ -83,8 +84,23 @@ export default function SignInPage() {
       <div className="auth-card">
         <div className="mb-6 space-y-3 text-center">
           <div className="auth-brand">
-            <span className="auth-brand-badge" aria-hidden="true">B</span>
-            <span className="auth-brand-word">Bill4</span>
+            <Image
+              src="/brand/bill4-logo.png"
+              alt="Bill4"
+              width={558}
+              height={375}
+              priority
+              className="brand-logo brand-logo-light"
+            />
+            <Image
+              src="/brand/bill4-logo-dark.png"
+              alt=""
+              aria-hidden="true"
+              width={558}
+              height={375}
+              priority
+              className="brand-logo brand-logo-dark"
+            />
           </div>
           <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text, var(--text))" }}>{t("auth.signinTitle")}</h1>
           <p className="text-sm" style={{ color: "var(--color-muted, var(--muted))" }}>{t("auth.signinSubtitle")}</p>
