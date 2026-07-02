@@ -31,7 +31,7 @@ type Copy = {
 const copy: Record<"ru" | "uz" | "en", Copy> = {
   ru: {
     eyebrow: "Партнёрство",
-    title: "Реклама на Billard.uz",
+    title: "Реклама на Bill4",
     lead: "Размещение рекламы на платформе гарантированно привлечёт внимание спортсменов и болельщиков. Оставьте заявку — мы свяжемся и подберём формат под вашу задачу.",
     perksTitle: "Что мы предлагаем",
     perks: [
@@ -56,7 +56,7 @@ const copy: Record<"ru" | "uz" | "en", Copy> = {
   },
   uz: {
     eyebrow: "Hamkorlik",
-    title: "Billard.uz'da reklama",
+    title: "Bill4'da reklama",
     lead: "Platformada reklama joylashtirish sportchilar va muxlislar e'tiborini kafolatli jalb qiladi. So'rov qoldiring — biz bog'lanib, vazifangizga mos format tanlaymiz.",
     perksTitle: "Biz nimani taklif qilamiz",
     perks: [
@@ -81,7 +81,7 @@ const copy: Record<"ru" | "uz" | "en", Copy> = {
   },
   en: {
     eyebrow: "Partnership",
-    title: "Advertising on Billard.uz",
+    title: "Advertising on Bill4",
     lead: "Advertising on the platform is guaranteed to draw the attention of athletes and fans. Leave a request — we will reach out and find the right format for your goal.",
     perksTitle: "What we offer",
     perks: [

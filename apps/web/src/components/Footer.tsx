@@ -43,7 +43,7 @@ const footerCopy: Record<"ru" | "uz" | "en", FooterCopy> = {
       { title: "Снукер", links: disciplineLinks() },
       { title: "Китайский бильярд", links: disciplineLinks() }
     ],
-    rights: "Billuz. Все права защищены."
+    rights: "Bill4. Все права защищены."
   },
   uz: {
     tagline: "O'zbekistonda bilyard sport bo'yicha turnirlar o'tkazish uchun rasmiy platforma",
@@ -68,7 +68,7 @@ const footerCopy: Record<"ru" | "uz" | "en", FooterCopy> = {
       { title: "Snuker", links: disciplineLinks("uz") },
       { title: "Xitoy bilyardi", links: disciplineLinks("uz") }
     ],
-    rights: "Billuz. Barcha huquqlar himoyalangan."
+    rights: "Bill4. Barcha huquqlar himoyalangan."
   },
   en: {
     tagline: "The official platform for running billiard sport tournaments in Uzbekistan",
@@ -93,7 +93,7 @@ const footerCopy: Record<"ru" | "uz" | "en", FooterCopy> = {
       { title: "Snooker", links: disciplineLinks("en") },
       { title: "Chinese billiards", links: disciplineLinks("en") }
     ],
-    rights: "Billuz. All rights reserved."
+    rights: "Bill4. All rights reserved."
   }
 };
 
@@ -115,12 +115,12 @@ export function Footer() {
     <footer className="site-footer mt-16">
       <div className="container-shell">
         <div className="site-footer-top">
-          <Link href="/" className="site-footer-logo" aria-label="Billuz">
+          <Link href="/" className="site-footer-logo" aria-label="Bill4">
             <Image
-              src="/brand/billuz-logo-dark.png"
-              alt="Billuz"
-              width={507}
-              height={157}
+              src="/brand/bill4-logo-dark.png"
+              alt="Bill4"
+              width={558}
+              height={375}
               className="site-footer-logo-img"
             />
           </Link>

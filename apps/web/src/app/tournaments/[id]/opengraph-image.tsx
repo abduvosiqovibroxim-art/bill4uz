@@ -17,7 +17,7 @@ export default async function TournamentOpenGraphImage({
   const { id } = await params;
   const tournament = await fetchPublicSeo<RawTournament>(`/tournaments/${id}`);
   const title = pickSeoText(tournament?.title, "en") || "Tournament center";
-  const club = pickSeoText(tournament?.clubPreview?.name ?? tournament?.club?.name, "en") || "Billard.uz Pro";
+  const club = pickSeoText(tournament?.clubPreview?.name ?? tournament?.club?.name, "en") || "Bill4";
   const status = String(tournament?.status ?? "registration").toUpperCase();
   const city = tournament?.cityKey ? tournament.cityKey.replace(/^[a-z]/, (value) => value.toUpperCase()) : "Uzbekistan";
   const subtitle = `${club} • ${city} • Live bracket, participants, schedule, regulation, and results.`;
@@ -95,7 +95,7 @@ export default async function TournamentOpenGraphImage({
               </div>
             ))}
           </div>
-          <div style={{ display: "flex", fontSize: 28, color: "#9fb1a8" }}>Billard.uz Pro</div>
+          <div style={{ display: "flex", fontSize: 28, color: "#9fb1a8" }}>Bill4</div>
         </div>
       </div>
     ),

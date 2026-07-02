@@ -111,21 +111,21 @@ export function Header() {
     <header className="topbar site-header">
       <div className="container-shell">
         <div className="site-header-inner">
-          <Link href="/" className="site-logo header-brand" aria-label="Billuz">
+          <Link href="/" className="site-logo header-brand" aria-label="Bill4">
             <Image
-              src="/brand/billuz-logo.png"
-              alt="Billuz"
-              width={507}
-              height={157}
+              src="/brand/bill4-logo.png"
+              alt="Bill4"
+              width={558}
+              height={375}
               priority
               className="brand-logo brand-logo-light"
             />
             <Image
-              src="/brand/billuz-logo-dark.png"
+              src="/brand/bill4-logo-dark.png"
               alt=""
               aria-hidden="true"
-              width={507}
-              height={157}
+              width={558}
+              height={375}
               priority
               className="brand-logo brand-logo-dark"
             />

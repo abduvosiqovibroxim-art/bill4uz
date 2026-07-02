@@ -84,7 +84,7 @@ export default function SignInPage() {
         <div className="mb-6 space-y-3 text-center">
           <div className="auth-brand">
             <span className="auth-brand-badge" aria-hidden="true">B</span>
-            <span className="auth-brand-word">Billuz</span>
+            <span className="auth-brand-word">Bill4</span>
           </div>
           <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text, var(--text))" }}>{t("auth.signinTitle")}</h1>
           <p className="text-sm" style={{ color: "var(--color-muted, var(--muted))" }}>{t("auth.signinSubtitle")}</p>

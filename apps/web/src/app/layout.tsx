@@ -24,31 +24,31 @@ const description = "Бильярдные турниры, сетки, рейти
 export const metadata: Metadata = {
   metadataBase: metadataBaseUrl,
   title: {
-    default: "Billuz",
-    template: "%s | Billuz"
+    default: "Bill4",
+    template: "%s | Bill4"
   },
   description,
   alternates: {
     canonical: absoluteUrl("/")
   },
   openGraph: {
-    title: "Billuz",
+    title: "Bill4",
     description,
     url: absoluteUrl("/"),
-    siteName: "Billuz",
+    siteName: "Bill4",
     type: "website",
     images: [
       {
         url: absoluteUrl("/opengraph-image"),
         width: 1200,
         height: 630,
-        alt: "Billuz"
+        alt: "Bill4"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Billuz",
+    title: "Bill4",
     description,
     images: [absoluteUrl("/opengraph-image")]
   }

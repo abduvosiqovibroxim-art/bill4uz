@@ -16,7 +16,7 @@ export const dictionaryShowcasePass: Record<Locale, Record<string, unknown>> = {
       showcase: {
         heroTitle: "Живая платформа для турниров, клубов и рейтингов по бильярду",
         heroSubtitle:
-          "Billard.uz Pro объединяет публичные страницы турниров, live-сетки, игроков, клубы, новости и кабинеты организаторов в один продукт.",
+          "Bill4 объединяет публичные страницы турниров, live-сетки, игроков, клубы, новости и кабинеты организаторов в один продукт.",
         liveNow: "Сейчас в эфире",
         stage: "Стадия",
         matchesPlayed: "Сыграно матчей",
@@ -105,7 +105,7 @@ export const dictionaryShowcasePass: Record<Locale, Record<string, unknown>> = {
       showcase: {
         heroTitle: "Billiard turnirlari, klublari va reytinglari uchun jonli platforma",
         heroSubtitle:
-          "Billard.uz Pro ommaviy turnir sahifalari, jonli setkalar, o'yinchilar, klublar, yangiliklar va tashkilotchilar kabinetini bitta mahsulotga birlashtiradi.",
+          "Bill4 ommaviy turnir sahifalari, jonli setkalar, o'yinchilar, klublar, yangiliklar va tashkilotchilar kabinetini bitta mahsulotga birlashtiradi.",
         liveNow: "Hozir jonli",
         stage: "Bosqich",
         matchesPlayed: "Yakunlangan matchlar",
@@ -194,7 +194,7 @@ export const dictionaryShowcasePass: Record<Locale, Record<string, unknown>> = {
       showcase: {
         heroTitle: "A live platform for billiards tournaments, clubs, and rankings",
         heroSubtitle:
-          "Billard.uz Pro brings public tournament pages, live brackets, players, clubs, news, and organizer dashboards into one product.",
+          "Bill4 brings public tournament pages, live brackets, players, clubs, news, and organizer dashboards into one product.",
         liveNow: "Live now",
         stage: "Stage",
         matchesPlayed: "Matches played",

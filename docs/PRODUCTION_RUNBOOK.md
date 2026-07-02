@@ -15,18 +15,18 @@ Production mode is guarded by `REQUIRE_PRODUCTION_CONFIG=true`. The API and bot 
 Use the production compose file with the same public URLs used for the web build. The API and bot read runtime secrets from `apps/api/.env.production` and `apps/bot/.env.production`; the web public URLs are needed during image build:
 
 ```powershell
-$env:NEXT_PUBLIC_APP_URL = "https://billuz.uz"
-$env:NEXT_PUBLIC_API_URL = "https://api.billuz.uz/api"
-$env:INTERNAL_API_URL = "https://api.billuz.uz/api"
+$env:NEXT_PUBLIC_APP_URL = "https://bill4.uz"
+$env:NEXT_PUBLIC_API_URL = "https://api.bill4.uz/api"
+$env:INTERNAL_API_URL = "https://api.bill4.uz/api"
 docker compose -f docker-compose.production.yml up --build -d
 ```
 
 If you intentionally layer over the local compose file, use the same public URL variables:
 
 ```powershell
-$env:NEXT_PUBLIC_APP_URL = "https://billuz.uz"
-$env:NEXT_PUBLIC_API_URL = "https://api.billuz.uz/api"
-$env:INTERNAL_API_URL = "https://api.billuz.uz/api"
+$env:NEXT_PUBLIC_APP_URL = "https://bill4.uz"
+$env:NEXT_PUBLIC_API_URL = "https://api.bill4.uz/api"
+$env:INTERNAL_API_URL = "https://api.bill4.uz/api"
 docker compose -f docker-compose.yml -f docker-compose.production.yml up --build -d
 ```
 
@@ -75,9 +75,9 @@ Manual user-flow verification still needs a real Telegram account:
 
 Terminate HTTPS in a reverse proxy or managed platform and route:
 
-- `https://billuz.uz` -> web `3000`
-- `https://api.billuz.uz` -> api `4000`
-- Telegram webhook mode, if used: `https://bot.billuz.uz/telegram/webhook` -> bot `4100`
+- `https://bill4.uz` -> web `3000`
+- `https://api.bill4.uz` -> api `4000`
+- Telegram webhook mode, if used: `https://bot.bill4.uz/telegram/webhook` -> bot `4100`
 
 Set `TRUST_PROXY=true`, `AUTH_COOKIE_SECURE=true`, `APP_URL`, `API_PUBLIC_URL`, and `CORS_ORIGIN` to the final HTTPS domains.
 

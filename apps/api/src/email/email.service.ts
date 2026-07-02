@@ -19,7 +19,7 @@ export class EmailService implements OnModuleDestroy {
   constructor(private readonly configService: ConfigService) {
     this.appUrl = configService.get<string>("APP_URL", "http://localhost:3000");
     this.deliveryMode = configService.get<string>("EMAIL_DELIVERY_MODE", "file") === "smtp" ? "smtp" : "file";
-    this.from = configService.get<string>("EMAIL_FROM", "Billard.uz <no-reply@billard.uz>");
+    this.from = configService.get<string>("EMAIL_FROM", "Bill4 <no-reply@bill4.uz>");
     this.outboxDir = configService.get<string>("EMAIL_OUTBOX_DIR", "apps/api/.email-outbox");
   }
 
@@ -35,9 +35,9 @@ export class EmailService implements OnModuleDestroy {
     await this.sendMessage({
       category: "verify-email",
       to: email,
-      subject: "Verify your Billard.uz account",
+      subject: "Verify your Bill4 account",
       text: [
-        "Welcome to Billard.uz.",
+        "Welcome to Bill4.",
         "",
         "Please verify your email address by opening the link below:",
         actionUrl,
@@ -45,7 +45,7 @@ export class EmailService implements OnModuleDestroy {
         "If you did not create this account, you can ignore this email."
       ].join("\n"),
       html: [
-        "<p>Welcome to <strong>Billard.uz</strong>.</p>",
+        "<p>Welcome to <strong>Bill4</strong>.</p>",
         "<p>Please verify your email address by opening the link below:</p>",
         `<p><a href="${actionUrl}">${actionUrl}</a></p>`,
         "<p>If you did not create this account, you can ignore this email.</p>"
@@ -59,9 +59,9 @@ export class EmailService implements OnModuleDestroy {
     await this.sendMessage({
       category: "reset-password",
       to: email,
-      subject: "Reset your Billard.uz password",
+      subject: "Reset your Bill4 password",
       text: [
-        "We received a request to reset your Billard.uz password.",
+        "We received a request to reset your Bill4 password.",
         "",
         "Open the link below to set a new password:",
         actionUrl,
@@ -69,7 +69,7 @@ export class EmailService implements OnModuleDestroy {
         "If you did not request this change, you can ignore this email."
       ].join("\n"),
       html: [
-        "<p>We received a request to reset your <strong>Billard.uz</strong> password.</p>",
+        "<p>We received a request to reset your <strong>Bill4</strong> password.</p>",
         "<p>Open the link below to set a new password:</p>",
         `<p><a href="${actionUrl}">${actionUrl}</a></p>`,
         "<p>If you did not request this change, you can ignore this email.</p>"
@@ -81,7 +81,7 @@ export class EmailService implements OnModuleDestroy {
     await this.sendMessage({
       category: "advertising-request",
       to,
-      subject: "Новая заявка на размещение рекламы — Billard.uz",
+      subject: "Новая заявка на размещение рекламы — Bill4",
       text: body,
       html: `<pre style="font-family: inherit; white-space: pre-wrap;">${this.escapeHtml(body)}</pre>`
     });

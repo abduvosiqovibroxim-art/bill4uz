@@ -42,7 +42,7 @@ export default function OpenGraphImage() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 18, maxWidth: 860 }}>
-          <div style={{ fontSize: 88, fontWeight: 700, lineHeight: 0.9, letterSpacing: 2 }}>Billard.uz Pro</div>
+          <div style={{ fontSize: 88, fontWeight: 700, lineHeight: 0.9, letterSpacing: 2 }}>Bill4</div>
           <div style={{ fontSize: 34, lineHeight: 1.3, color: "#c8d5cf" }}>
             Live tournaments, premium clubs, player rankings, and full tournament centers with real brackets.
           </div>
@@ -66,7 +66,7 @@ export default function OpenGraphImage() {
               </div>
             ))}
           </div>
-          <div style={{ fontSize: 28, color: "#9fb1a8" }}>billard.uz</div>
+          <div style={{ fontSize: 28, color: "#9fb1a8" }}>bill4.uz</div>
         </div>
       </div>
     ),

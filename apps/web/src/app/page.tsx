@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: dictionaryText(locale, "common.brand"),
     description: dictionaryText(locale, "common.appDescription"),
     path: "/",
-    imageAlt: "Billard.uz Pro"
+    imageAlt: "Bill4"
   });
 }
 

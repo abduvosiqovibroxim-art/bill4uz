@@ -4,7 +4,7 @@ import { defaultLocale, dictionaries, LOCALE_COOKIE, type DictionaryNode } from 
 import { isLocale } from "./locale";
 import type { Locale, LocalizedText } from "./types";
 
-const SITE_NAME = "Billard.uz Pro";
+const SITE_NAME = "Bill4";
 const DEFAULT_DESCRIPTION =
   "Live tournaments, premium clubs, player rankings, and tournament centers for Uzbekistan billiards.";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -190,10 +190,10 @@ export function buildPlayerDescription({
   }
 
   if (elo > 0) {
-    return `${name} from ${city} represents ${club}. Current ELO ${elo} with recorded tournament history on Billard.uz Pro.`;
+    return `${name} from ${city} represents ${club}. Current ELO ${elo} with recorded tournament history on Bill4.`;
   }
 
-  return `${name} from ${city} represents ${club} on Billard.uz Pro. Rating and statistics appear after verified play or a controlled external update.`;
+  return `${name} from ${city} represents ${club} on Bill4. Rating and statistics appear after verified play or a controlled external update.`;
 }
 
 export function buildClubDescription({
@@ -205,7 +205,7 @@ export function buildClubDescription({
   city: string;
   description?: string;
 }) {
-  return description || `${name} in ${city}. Club profile on Billard.uz Pro.`;
+  return description || `${name} in ${city}. Club profile on Bill4.`;
 }
 
 export function buildNewsDescription({

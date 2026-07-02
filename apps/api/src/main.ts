@@ -29,7 +29,7 @@ async function bootstrap() {
   app.useGlobalFilters(new LoggingExceptionFilter());
 
   const config = new DocumentBuilder()
-    .setTitle("Billard.uz API")
+    .setTitle("Bill4 API")
     .setDescription("Tournament and club ecosystem API")
     .setVersion("1.0")
     .addBearerAuth()

@@ -18,7 +18,7 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
   ru: {
     common: {
       language: "Язык",
-      brand: "Billard.uz Pro",
+      brand: "Bill4",
       platformTag: "Премиальная турнирная экосистема",
       appDescription: "Цифровая платформа для клубов, турниров, игроков и рейтингов Узбекистана.",
       readMore: "Подробнее",
@@ -260,7 +260,7 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
       telegram: "Telegram",
       address: "Адрес",
       addressValue: "Ташкент, Яккасарайский район",
-      rights: "Billard.uz Pro. Все права защищены."
+      rights: "Bill4. Все права защищены."
     },
     forms: {
       name: "Имя",
@@ -339,7 +339,7 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
   uz: {
     common: {
       language: "Til",
-      brand: "Billard.uz Pro",
+      brand: "Bill4",
       platformTag: "Premium turnir ekotizimi",
       appDescription: "O'zbekiston klublari, turnirlari, o'yinchilari va reytinglari uchun raqamli platforma.",
       readMore: "Batafsil",
@@ -581,7 +581,7 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
       telegram: "Telegram",
       address: "Manzil",
       addressValue: "Toshkent, Yakkasaroy tumani",
-      rights: "Billard.uz Pro. Barcha huquqlar himoyalangan."
+      rights: "Bill4. Barcha huquqlar himoyalangan."
     },
     forms: {
       name: "Ism",
@@ -660,7 +660,7 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
   en: {
     common: {
       language: "Language",
-      brand: "Billard.uz Pro",
+      brand: "Bill4",
       platformTag: "Premium tournament ecosystem",
       appDescription: "Digital platform for Uzbekistan clubs, tournaments, players, and rankings.",
       readMore: "Read more",
@@ -902,7 +902,7 @@ export const dictionaries: Record<Locale, Record<string, DictionaryNode>> = {
       telegram: "Telegram",
       address: "Address",
       addressValue: "Tashkent, Yakkasaray district",
-      rights: "Billard.uz Pro. All rights reserved."
+      rights: "Bill4. All rights reserved."
     },
     forms: {
       name: "Name",

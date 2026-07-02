@@ -5523,10 +5523,10 @@ textarea {
   flex: 0 0 auto;
 }
 
-/* Billuz brand logo (theme-aware): dark mark on light theme, light mark on dark theme. */
+/* Bill4 brand logo (theme-aware): dark mark on light theme, light mark on dark theme. */
 .brand-logo {
   display: block;
-  height: 30px;
+  height: 48px;
   width: auto;
 }
 
@@ -5544,7 +5544,7 @@ html[data-theme="dark"] .brand-logo-dark {
 
 @media (max-width: 640px) {
   .brand-logo {
-    height: 26px;
+    height: 40px;
   }
 }
 
@@ -7978,7 +7978,7 @@ a.portal-info-card:hover {
 
 .site-footer-logo-img {
   display: block;
-  height: 42px;
+  height: 48px;
   width: auto;
 }
 

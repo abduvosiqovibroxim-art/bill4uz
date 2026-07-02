@@ -1,4 +1,4 @@
-# Billard.uz Pro Platform (Uzbekistan-first)
+# Bill4 Platform (Uzbekistan-first)
 
 Production-ready foundation of a billiard ecosystem platform:
 - Next.js + TypeScript + Tailwind frontend

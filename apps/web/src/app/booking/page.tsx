@@ -3,7 +3,7 @@ import { BookingPageClient } from "./BookingPageClient";
 
 export const metadata: Metadata = {
   title: "Забронировать бильярд",
-  description: "Карта бильярдных мест Billuz"
+  description: "Карта бильярдных мест Bill4"
 };
 
 export default function BookingPage() {
