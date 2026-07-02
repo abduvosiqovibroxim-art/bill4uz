@@ -85,7 +85,7 @@ export default function SignInPage() {
         <div className="mb-6 space-y-3 text-center">
           <div className="auth-brand">
             <Image
-              src="/brand/bill4-logo.png"
+              src="/brand/bill4-logo.png?v=2"
               alt="Bill4"
               width={1007}
               height={230}
@@ -93,7 +93,7 @@ export default function SignInPage() {
               className="brand-logo brand-logo-light"
             />
             <Image
-              src="/brand/bill4-logo-dark.png"
+              src="/brand/bill4-logo-dark.png?v=2"
               alt=""
               aria-hidden="true"
               width={1007}

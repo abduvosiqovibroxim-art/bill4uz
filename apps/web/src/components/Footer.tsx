@@ -117,7 +117,7 @@ export function Footer() {
         <div className="site-footer-top">
           <Link href="/" className="site-footer-logo" aria-label="Bill4">
             <Image
-              src="/brand/bill4-logo-dark.png"
+              src="/brand/bill4-logo-dark.png?v=2"
               alt="Bill4"
               width={1007}
               height={230}

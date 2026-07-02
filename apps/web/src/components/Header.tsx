@@ -113,7 +113,7 @@ export function Header() {
         <div className="site-header-inner">
           <Link href="/" className="site-logo header-brand" aria-label="Bill4">
             <Image
-              src="/brand/bill4-logo.png"
+              src="/brand/bill4-logo.png?v=2"
               alt="Bill4"
               width={1007}
               height={230}
@@ -121,7 +121,7 @@ export function Header() {
               className="brand-logo brand-logo-light"
             />
             <Image
-              src="/brand/bill4-logo-dark.png"
+              src="/brand/bill4-logo-dark.png?v=2"
               alt=""
               aria-hidden="true"
               width={1007}
