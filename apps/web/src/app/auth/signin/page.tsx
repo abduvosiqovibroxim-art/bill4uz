@@ -85,19 +85,21 @@ export default function SignInPage() {
         <div className="mb-6 space-y-3 text-center">
           <div className="auth-brand">
             <Image
-              src="/brand/bill4-logo.png?v=3"
+              src="/brand/bill4-logo-v4.png"
               alt="Bill4"
-              width={2284}
-              height={537}
+              width={1200}
+              height={282}
+              unoptimized
               priority
               className="brand-logo brand-logo-light"
             />
             <Image
-              src="/brand/bill4-logo-dark.png?v=3"
+              src="/brand/bill4-logo-v4-dark.png"
               alt=""
               aria-hidden="true"
-              width={2284}
-              height={537}
+              width={1200}
+              height={282}
+              unoptimized
               priority
               className="brand-logo brand-logo-dark"
             />

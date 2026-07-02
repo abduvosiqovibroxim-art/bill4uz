@@ -117,10 +117,11 @@ export function Footer() {
         <div className="site-footer-top">
           <Link href="/" className="site-footer-logo" aria-label="Bill4">
             <Image
-              src="/brand/bill4-logo-dark.png?v=3"
+              src="/brand/bill4-logo-v4-dark.png"
               alt="Bill4"
-              width={2284}
-              height={537}
+              width={1200}
+              height={282}
+              unoptimized
               className="site-footer-logo-img"
             />
           </Link>
