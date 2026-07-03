@@ -1,0 +1,16 @@
+# Netlify config for the Bill4 frontend (apps/web, Next.js) in this npm-workspaces
+# monorepo. The backend (api) runs separately on Render; the frontend proxies
+# /api to it via the rewrite in apps/web/next.config.ts (set INTERNAL_API_URL in
+# the Netlify UI to the Render API URL — this avoids CORS in the browser).
+#
+# Set these in Netlify UI → Site settings → Environment variables:
+#   NEXT_PUBLIC_API_URL = /api
+#   NEXT_PUBLIC_APP_URL = https://bill4.uz         (or your netlify subdomain)
+#   INTERNAL_API_URL    = https://<render-api>.onrender.com/api
+
+[build]
+  command = "npm run build -w apps/web"
+  # Do not set "publish" — the Next.js plugin handles it.
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

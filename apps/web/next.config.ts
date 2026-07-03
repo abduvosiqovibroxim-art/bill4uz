@@ -4,7 +4,9 @@ import path from "path";
 const internalApiUrl = process.env.INTERNAL_API_URL ?? "http://localhost:4000/api";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // "standalone" is for the Docker/self-host build. Netlify's Next runtime wants
+  // the default output, so disable it when building on Netlify.
+  output: process.env.NETLIFY ? undefined : "standalone",
   outputFileTracingRoot: path.join(__dirname, "../../"),
   async rewrites() {
     return [
