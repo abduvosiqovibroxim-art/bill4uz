@@ -34,3 +34,8 @@ apps/api/.env
 apps/api/.env.production
 apps/bot/.env
 apps/bot/.env.production
+
+# Netlify CLI local build artifacts
+.netlify/
+apps/web/.netlify/
+deno.lock
