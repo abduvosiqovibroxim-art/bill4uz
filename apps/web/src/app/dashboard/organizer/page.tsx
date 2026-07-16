@@ -304,8 +304,9 @@ export default function OrganizerDashboardPage() {
   const participantModeSelectOptions = participantSelectionModeOptions.filter((option) => option.active);
   const playerLevelSelectOptions = playerLevelOptions.filter((option) => option.active);
   const formatOptions = tournamentFormatOptions.filter((option) => option.active);
-  // Show every bracket system, but keep the unsupported ones visible-yet-disabled
-  // ("— скоро" already baked into their labels). Only Single Elimination is active.
+  // Every bracket system is supported end-to-end (backend generation + viewer),
+  // so all options are selectable. The `disabled={!option.active}` guard below
+  // stays as a safety net in case a system is gated off again in the taxonomy.
   const bracketTypeOptions = bracketSystemOptions;
   const createValidationErrors = getCreateTournamentValidationErrors(form, c, participantMode, manualParticipants);
   const isSubmitting = createTournamentMutation.isPending || createManualDrawTournamentMutation.isPending;

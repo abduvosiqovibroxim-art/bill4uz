@@ -57,10 +57,10 @@ export const tournamentFormatOptions: TaxonomyOption<TournamentEventFormatKey>[]
 
 export const bracketSystemOptions: TaxonomyOption<TournamentBracketSystemKey>[] = [
   { value: "singleElimination", label: { ru: "Single Elimination", uz: "Single Elimination", en: "Single Elimination" }, active: true },
-  { value: "doubleElimination", label: { ru: "Double Elimination - скоро", uz: "Double Elimination - tez orada", en: "Double Elimination - soon" }, active: false },
-  { value: "roundRobin", label: { ru: "Round Robin - скоро", uz: "Round Robin - tez orada", en: "Round Robin - soon" }, active: false },
-  { value: "swiss", label: { ru: "Swiss - скоро", uz: "Swiss - tez orada", en: "Swiss - soon" }, active: false },
-  { value: "groupPlayoff", label: { ru: "Group + Playoff - скоро", uz: "Group + Playoff - tez orada", en: "Group + Playoff - soon" }, active: false }
+  { value: "doubleElimination", label: { ru: "Double Elimination", uz: "Double Elimination", en: "Double Elimination" }, active: true },
+  { value: "roundRobin", label: { ru: "Round Robin", uz: "Round Robin", en: "Round Robin" }, active: true },
+  { value: "swiss", label: { ru: "Swiss", uz: "Swiss", en: "Swiss" }, active: true },
+  { value: "groupPlayoff", label: { ru: "Group + Playoff", uz: "Group + Playoff", en: "Group + Playoff" }, active: true }
 ];
 
 export const tournamentTypeOptions: TaxonomyOption<TournamentTypeKey>[] = [

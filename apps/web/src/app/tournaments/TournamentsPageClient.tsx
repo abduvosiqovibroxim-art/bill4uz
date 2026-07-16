@@ -367,7 +367,14 @@ function formatLabel(format: string, t: (path: string) => string) {
     return t("tournamentCenter.formats.singleElimination");
   }
 
-  return `${format} soon`;
+  const labels: Record<string, string> = {
+    doubleElimination: "Double Elimination",
+    roundRobin: "Round Robin",
+    swiss: "Swiss",
+    groupPlayoff: "Group + Playoff"
+  };
+
+  return labels[format] ?? format;
 }
 
 function cityLabel(cityKey: string, t: (path: string) => string, c: TournamentsCopy) {

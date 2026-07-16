@@ -356,16 +356,13 @@ function tabLabel(tab: TournamentTab, locale: "ru" | "uz" | "en", t: (path: stri
 }
 
 function formatLabel(tournament: TournamentDetail, locale: "ru" | "uz" | "en", t: (path: string) => string) {
-  const formatKey = tournament.bracketSystem === "singleElimination"
-    ? "tournamentCenter.formats.singleElimination"
-    : null;
   const participantLabel = tournament.bracketSize ?? tournament.participants;
+  const systemLabel =
+    tournament.bracketSystem === "singleElimination"
+      ? t("tournamentCenter.formats.singleElimination")
+      : bracketSystemLabel(tournament.bracketSystem);
 
-  if (!formatKey) {
-    return `${soonFormatLabel(tournament.bracketSystem, locale)} / ${participantLabel} ${t("tournamentCenter.formats.playersSuffix")}`;
-  }
-
-  return `${t(formatKey)} / ${participantLabel} ${t("tournamentCenter.formats.playersSuffix")}`;
+  return `${systemLabel} / ${participantLabel} ${t("tournamentCenter.formats.playersSuffix")}`;
 }
 
 function localizedDescription(tournament: TournamentDetail, locale: "ru" | "uz" | "en") {
@@ -462,15 +459,15 @@ function unsupportedFormatMessage(locale: "ru" | "uz" | "en") {
   return "This bracket format is not available yet";
 }
 
-function soonFormatLabel(format: string, locale: "ru" | "uz" | "en") {
+function bracketSystemLabel(format: string) {
   const labels: Record<string, string> = {
+    singleElimination: "Single Elimination",
     doubleElimination: "Double Elimination",
     roundRobin: "Round Robin",
     swiss: "Swiss",
     groupPlayoff: "Group + Playoff"
   };
-  const suffix = locale === "ru" ? "скоро" : locale === "uz" ? "tez orada" : "soon";
-  return `${labels[format] ?? format} - ${suffix}`;
+  return labels[format] ?? format;
 }
 
 function isLevelAllowed(playerLevel: PlayerLevelKey, minLevel: PlayerLevelKey, maxLevel: PlayerLevelKey) {
