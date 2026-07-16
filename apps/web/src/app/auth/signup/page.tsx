@@ -46,6 +46,21 @@ const signupConflictCopy: Record<"ru" | "uz" | "en", { generic: string; phone: s
   }
 };
 
+const signupValidationCopy: Record<"ru" | "uz" | "en", { phone: string; password: string }> = {
+  ru: {
+    phone: "Введите номер телефона",
+    password: "Пароль должен содержать минимум 6 символов"
+  },
+  uz: {
+    phone: "Telefon raqamini kiriting",
+    password: "Parol kamida 6 ta belgidan iborat bo'lishi kerak"
+  },
+  en: {
+    phone: "Enter your phone number",
+    password: "Password must be at least 6 characters"
+  }
+};
+
 export default function SignUpPage() {
   const { locale, t } = useI18n();
   const router = useRouter();
@@ -74,8 +89,21 @@ export default function SignUpPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSubmitting(true);
     setError(null);
+
+    // Validate client-side so the user sees a clear reason instead of the backend's
+    // generic 400. Mirrors the API rules: phone required, password >= 6 chars.
+    if (!phone.trim()) {
+      setError(signupValidationCopy[locale].phone);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError(signupValidationCopy[locale].password);
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
       const signedUpUser = await signUp({
@@ -97,18 +125,18 @@ export default function SignUpPage() {
       if (conflictMessage) {
         setError(conflictMessage);
       } else {
+        // Surface the API's own validation message (e.g. "Выберите корректный город")
+        // for 400s instead of hiding it behind a generic string.
+        const backendMessage =
+          cause instanceof ApiError && cause.status === 400 ? getApiPayloadMessage(cause.payload) : null;
         setError(
-          getUserFacingApiError(cause, {
-            locale,
-            t,
-            fallbackKey: "auth.signupSimple.failed",
-            statusKeys: {
-              400: "auth.signupSimple.failed",
-              401: "auth.signupSimple.failed",
-              403: "auth.signupSimple.failed"
-            },
-            debugLabel: "auth-signup"
-          })
+          backendMessage ??
+            getUserFacingApiError(cause, {
+              locale,
+              t,
+              fallbackKey: "auth.signupSimple.failed",
+              debugLabel: "auth-signup"
+            })
         );
       }
     } finally {
