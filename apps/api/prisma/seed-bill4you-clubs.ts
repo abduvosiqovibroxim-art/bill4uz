@@ -196,6 +196,24 @@ async function main() {
     all = all.concat(items);
   }
 
+  // Country filter. bill4you returns ~600 clubs across many countries, but this app is
+  // Uzbekistan-centric, so by default we import only UZ. Override with
+  // SEED_CLUBS_COUNTRIES=all (every country) or a comma list like "UZ,KZ,KG".
+  const countryFilter = (process.env.SEED_CLUBS_COUNTRIES ?? "UZ").trim();
+  if (countryFilter && countryFilter.toLowerCase() !== "all") {
+    const allowed = new Set(
+      countryFilter
+        .split(",")
+        .map((code) => code.trim().toUpperCase())
+        .filter(Boolean)
+    );
+    const before = all.length;
+    all = all.filter((club) => allowed.has((club.countryCode || "XX").toUpperCase()));
+    console.log(
+      `Country filter [${[...allowed].join(",")}]: ${all.length} of ${before} clubs kept`
+    );
+  }
+
   let added = 0;
   let updated = 0;
   let skipped = 0;
