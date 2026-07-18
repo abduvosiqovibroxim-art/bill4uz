@@ -12,7 +12,7 @@ import {
   useImportClubsFromMapAdminMutation
 } from "@/lib/api/hooks";
 import { getApiPayloadMessage, getUserFacingApiError } from "@/lib/api/errors";
-import { phoneHref, routeHref, splitPhones, telegramHref } from "@/lib/clubContact";
+import { hasClubCoordinates, phoneHref, routeHref, splitPhones, telegramHref } from "@/lib/clubContact";
 import { useI18n } from "@/lib/i18n";
 import type { BookingEntry, Club, LocalizedText } from "@/lib/types";
 
@@ -20,6 +20,7 @@ const copy = {
   ru: {
     title: "Забронировать",
     empty: "Бильярдные пока не добавлены",
+    listTitle: "Все клубы",
     importMap: "Обновить с карты",
     importResult: "Добавлено {added}, обновлено {updated}, пропущено {skipped}",
     call: "Позвонить",
@@ -61,6 +62,7 @@ const copy = {
   uz: {
     title: "Bron qilish",
     empty: "Bilyard zallari hali qo'shilmagan",
+    listTitle: "Barcha klublar",
     importMap: "Xaritadan yangilash",
     importResult: "Qo'shildi {added}, yangilandi {updated}, o'tkazib yuborildi {skipped}",
     call: "Qo'ng'iroq",
@@ -102,6 +104,7 @@ const copy = {
   en: {
     title: "Book",
     empty: "No billiard venues added yet",
+    listTitle: "All clubs",
     importMap: "Update from map",
     importResult: "Added {added}, updated {updated}, skipped {skipped}",
     call: "Call",
@@ -268,16 +271,26 @@ export function BookingPageClient() {
             onImport={runImport}
           />
         ) : (
-          <div className="relative rounded-lg overflow-hidden h-[70vh] lg:h-[600px]" style={{ border: "1px solid var(--card-border)", minHeight: "420px" }}>
-            <ClubMap
+          <div className="grid gap-6">
+            <div className="relative rounded-lg overflow-hidden h-[70vh] lg:h-[600px]" style={{ border: "1px solid var(--card-border)", minHeight: "420px" }}>
+              <ClubMap
+                clubs={clubs}
+                selectedClubId={selectedClub?.id}
+                className="!h-full !min-h-full"
+                onSelectClub={(club) => setSelectedClubId(club.id)}
+              />
+              {selectedClub ? (
+                <SelectedClubSheet club={selectedClub} labels={c} text={text} onBook={() => setBookingClub(selectedClub)} />
+              ) : null}
+            </div>
+            <ClubList
               clubs={clubs}
-              selectedClubId={selectedClub?.id}
-              className="!h-full !min-h-full"
-              onSelectClub={(club) => setSelectedClubId(club.id)}
+              labels={c}
+              text={text}
+              selectedClubId={selectedClub?.id ?? null}
+              onSelect={(club) => setSelectedClubId(club.id)}
+              onBook={(club) => setBookingClub(club)}
             />
-            {selectedClub ? (
-              <SelectedClubSheet club={selectedClub} labels={c} text={text} onBook={() => setBookingClub(selectedClub)} />
-            ) : null}
           </div>
         )}
       </section>
@@ -424,6 +437,96 @@ function SelectedClubSheet({
         ) : null}
       </div>
     </article>
+  );
+}
+
+function ClubList({
+  clubs,
+  labels,
+  text,
+  selectedClubId,
+  onSelect,
+  onBook
+}: {
+  clubs: Club[];
+  labels: BookingLabels;
+  text: TextFn;
+  selectedClubId: string | null;
+  onSelect: (club: Club) => void;
+  onBook: (club: Club) => void;
+}) {
+  return (
+    <section>
+      <h2 className="mb-3 text-lg font-bold" style={{ color: "var(--text)" }}>
+        {labels.listTitle} <span style={{ color: "var(--muted)" }}>({clubs.length})</span>
+      </h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {clubs.map((club) => {
+          const onMap = hasClubCoordinates(club);
+          const isSelected = club.id === selectedClubId;
+          const callHref = phoneHref(club.phone);
+          const addressText = text(club.address);
+          const hours = text(club.workHours);
+          const phones = splitPhones(club.phone);
+          const flag = club.countryCode && /^[a-z]{2}$/.test(club.countryCode) ? club.countryCode : null;
+
+          return (
+            <article
+              key={club.id}
+              className="flex flex-col gap-3 p-4 rounded-xl"
+              style={{
+                background: "var(--surface)",
+                border: `1px solid ${isSelected ? "var(--accent)" : "var(--card-border)"}`
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => onSelect(club)}
+                disabled={!onMap}
+                className="text-left"
+                style={{ background: "none", border: "none", padding: 0, cursor: onMap ? "pointer" : "default" }}
+                title={onMap ? labels.onMap : undefined}
+              >
+                <div className="flex items-center gap-2">
+                  {flag ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={`https://flagcdn.com/24x18/${flag}.png`} alt="" width={20} height={15} className="shrink-0 rounded-sm" />
+                  ) : null}
+                  <span className="font-bold" style={{ color: "var(--text)" }}>{text(club.name)}</span>
+                  {onMap ? (
+                    <span className="ml-auto shrink-0 text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--surface-soft)", color: "var(--accent)" }}>
+                      {labels.onMap}
+                    </span>
+                  ) : null}
+                </div>
+              </button>
+
+              <div className="grid gap-1 text-sm" style={{ color: "var(--muted)" }}>
+                <p>{addressText || "—"}</p>
+                <p>{phones[0] ?? labels.phoneMissing}</p>
+                {hours ? <p>{hours}</p> : null}
+              </div>
+
+              <div className="mt-auto flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onBook(club)}
+                  className="flex-1 px-3 py-2 text-center font-semibold rounded-lg"
+                  style={{ background: "var(--accent)", color: "var(--bg)" }}
+                >
+                  {labels.bookCta}
+                </button>
+                {callHref ? (
+                  <a href={callHref} className="px-3 py-2 text-center font-semibold rounded-lg" style={{ border: "1px solid var(--accent)", color: "var(--accent)" }}>
+                    {labels.call}
+                  </a>
+                ) : null}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
